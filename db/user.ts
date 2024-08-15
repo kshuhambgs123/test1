@@ -71,12 +71,34 @@ export async function addCredits(addCreds: number, userId: string): Promise<User
     }
 }
 
-export async function reduceCredits(sessionTime: number, price: number, userID: string): Promise<void> {
+export async function removeCredits(removeCreds: number, userId: string): Promise<User | null> {
     try {
-        // Implement the logic for reducing credits
+        let data = await prisma.user.findUnique({
+            where: {
+                UserID: userId,
+            },
+        });
+
+        if (!data) {
+            return null;
+        }
+
+        const updatedCred = data.credits - Math.abs(removeCreds);
+
+        data = await prisma.user.update({
+            where: {
+                UserID: userId,
+            },
+            data: {
+                credits: updatedCred,
+            },
+        });
+
+        return data;
     } catch (error: any) {
         throw new Error(error.message);
     }
+    
 }
 
 export async function getCredits(userID: string): Promise<number | null> {

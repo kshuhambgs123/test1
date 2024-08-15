@@ -8,6 +8,27 @@ datasource db {
   directUrl = env("DIRECT_URL")
 }
 
+model Logs{
+  LogID String @id @unique
+  userID String
+  leadsRequested Int
+  leadsEnriched Int?
+  apolloLink String
+  fileName String
+  creditsUsed Int
+  url String?
+  status Int
+  date DateTime
+  user User @relation(fields: [userID], references: [UserID])
+}
+
+model ApiKeys {
+    apiKeyID String @id @unique
+    apiKey String
+    userID String @unique
+    user User @relation(fields: [userID], references: [UserID])
+}
+
 model User {
     UserID String @id @unique
     name String
@@ -16,4 +37,11 @@ model User {
     phoneNumber String?
     location String?
     credits Int
+    apikey ApiKeys?
+    logs Logs[]
+}
+
+model Admin{
+  email String @id @unique
+  password String
 }
