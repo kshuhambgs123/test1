@@ -3,7 +3,7 @@ import { createUser, getUser, addCredits, removeCredits } from '../db/user';
 import verifySessionToken from '../middleware/supabaseAuth';
 import dotenv from 'dotenv';
 dotenv.config();
-import { createLog} from "../db/log"
+import { createLog, updateLog} from "../db/log"
 import formdata from 'form-data';
 
 const app = express.Router();
@@ -100,15 +100,16 @@ app.post("/searchlead", verifySessionToken, async (req: Request , res: Response)
             res.status(400).json({ message: "Insufficient credits" });
             return;
         }
+
+        const dns = process.env.DNS as string;
         
 
         const formData = new formdata();
 
-        formData.append('FULL NAME', user.name);
-        formData.append('Apollo Link', apolloLink);
-        formData.append('File Name', fileName);
-        formData.append('user_uid', userID);
-        formData.append('total_leads',noOfLeadsNumeric);
+        formData.append('apollo_link', apolloLink);
+        formData.append('file_name', fileName);
+        formData.append('id', dns);
+        formData.append('leads_count',noOfLeadsNumeric);
 
         const searchAPI = process.env.SEARCHAUTOMATIONAPI as string;
 
@@ -145,6 +146,8 @@ app.post("/searchlead", verifySessionToken, async (req: Request , res: Response)
         res.status(500).json({ message: error.message });
     }    
 })
+
+
 
 export default app;
 
