@@ -43,12 +43,10 @@ app.post("/checkleadStatus", verifySessionToken, async (req: Request , res: Resp
     try {
         const { logID } = req.body;
 
-        const leadStatusAPI = process.env.SEARCHAUTOMATIONAPISTATUS as string;
-
         const formData = new formdata();
-
         formData.append('record_id', logID);
-
+        
+        const leadStatusAPI = process.env.SEARCHAUTOMATIONAPISTATUS as string;
         const response = await fetch(leadStatusAPI,{
             method: 'POST',
             headers: {
@@ -77,3 +75,5 @@ app.post("/checkleadStatus", verifySessionToken, async (req: Request , res: Resp
         res.status(500).json({ message: error.message });
     }
 })
+
+export default app;

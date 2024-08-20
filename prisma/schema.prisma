@@ -17,7 +17,7 @@ model Logs{
   fileName String
   creditsUsed Int
   url String?
-  status Int
+  status String
   date DateTime
   user User @relation(fields: [userID], references: [UserID])
 }

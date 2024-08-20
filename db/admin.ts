@@ -1,6 +1,6 @@
 import { PrismaClient } from "@prisma/client";
+import { v4 as uuid} from 'uuid';
 import { adminAuth } from "./admindb";
-import {v4} from 'uuid';
 
 const prisma = new PrismaClient();
 
@@ -14,7 +14,7 @@ export async function adminLogin(email:string,password:string) {
     if(!data){
         return null;
     }
-    const token = v4();
+    const token = uuid();
     await adminAuth.set(token,data.email);
 
     return token;
@@ -26,14 +26,20 @@ export async function getAllUsers() {
 }
 
 export async function generateAPIkey(userID: string){
-    const key = v4();
+    const key = uuid() as string;
+    const apiKeyID = key+userID as string;
 
     const data = await prisma.user.update({
         where: {
             UserID: userID
         },
         data: {
-            apikey: key
+            apikey: {
+                create: {
+                    apiKeyID: apiKeyID,
+                    apiKey: key
+                }
+            }
         }
     });
 
@@ -47,5 +53,57 @@ export async function getAllApikeys(){
 }
 
 
+export async function updateCredits(userID: string,credits: number){
+    const data = await prisma.user.findUnique({
+        where: {
+            UserID: userID
+        }
+    })
 
+    if(!data){
+        return null;
+    }   
+
+    const updatedCredits = data.credits + credits;
+
+    if (updatedCredits < 0){
+        return "negative";
+    }
+
+    const updatedData = await prisma.user.update({
+        where: {
+            UserID: userID
+        },
+        data: {
+            credits: updatedCredits
+        }
+    })
+
+    if(!updatedData){
+        return null;
+    }
+    
+
+    return updatedData;
+}
+
+export async function getUserById(userID: string){
+    const data = await prisma.user.findUnique({
+        where: {
+            UserID: userID
+        }
+    });
+
+    return data;
+}
+
+export async function getLogsByUserID(userID: string){
+    const data = await prisma.logs.findMany({
+        where:{
+            userID: userID
+        }
+    })
+
+    return data;
+}
 

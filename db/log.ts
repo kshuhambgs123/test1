@@ -25,7 +25,7 @@ export async function createLog(
                 fileName: fileName,
                 creditsUsed: creditsUsed,
                 url: url,
-                status: 0,
+                status: "pending",
                 date: new Date(),
             }
         })
@@ -72,7 +72,7 @@ export async function getOneLog(logID: string): Promise<Logs | null> {
 
 export async function updateLog(
     logID: string, 
-    status: number,
+    status: string,
     url: string,
     leadsEnriched: number,
 ): Promise<Logs | null> {

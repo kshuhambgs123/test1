@@ -18,7 +18,7 @@ const adminVerification = async (req: Request, res: Response, next: NextFunction
     } else {
       throw new Error("Unauthorized");
     }
-  } catch (error) {
+  } catch (error: any) {
     res.status(401).json({ message: error.message });
   }
 };
