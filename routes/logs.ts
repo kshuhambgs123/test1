@@ -42,9 +42,6 @@ app.post("/getOneLog", verifySessionToken, async (req: Request, res: Response): 
 app.post("/checkleadStatus", verifySessionToken, async (req: Request , res: Response): Promise<void> => {
     try {
         const { logID } = req.body;
-
-        const formData = new formdata();
-        formData.append('record_id', logID);
         
         const leadStatusAPI = process.env.SEARCHAUTOMATIONAPISTATUS as string;
         const response = await fetch(leadStatusAPI,{
@@ -52,7 +49,7 @@ app.post("/checkleadStatus", verifySessionToken, async (req: Request , res: Resp
             headers: {
                 'Content-Type': 'application/json',
             },
-            body: JSON.stringify(formData),
+            body: JSON.stringify({"record_id":logID}),
         });
 
         if (!response.ok) {
