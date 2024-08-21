@@ -1,21 +1,21 @@
 import { PrismaClient } from "@prisma/client";
-import { v4 as uuid} from 'uuid';
+import { v4 as uuid } from 'uuid';
 import { adminAuth } from "./admindb";
 
 const prisma = new PrismaClient();
 
-export async function adminLogin(email:string,password:string) {
+export async function adminLogin(email: string, password: string) {
     const data = await prisma.admin.findUnique({
         where: {
             email: email,
             password: password
         },
     });
-    if(!data){
+    if (!data) {
         return null;
     }
     const token = uuid();
-    await adminAuth.set(token,data.email);
+    await adminAuth.set(token, data.email);
 
     return token;
 }
@@ -25,48 +25,58 @@ export async function getAllUsers() {
     return data;
 }
 
-export async function generateAPIkey(userID: string){
+export async function generateAPIkey(userID: string) {
     const key = uuid() as string;
-    const apiKeyID = key+userID as string;
 
     const data = await prisma.user.update({
         where: {
             UserID: userID
         },
         data: {
-            apikey: {
-                create: {
-                    apiKeyID: apiKeyID,
-                    apiKey: key
-                }
-            }
+            apikey: key
         }
     });
 
     return data;
 }
 
-export async function getAllApikeys(){
-    const data = await prisma.apiKeys.findMany();
+export async function getAllApikeys() {
+    const data = await prisma.user.findMany({
+        select: {
+            apikey: true
+        }
+    });
 
     return data;
 }
 
+export async function getApiKey(userID: string) {
+    const data = await prisma.user.findUnique({
+        where: {
+            UserID: userID
+        }
+    });
 
-export async function updateCredits(userID: string,credits: number){
+    console.log(data);
+    
+    return data?.apikey;
+}
+
+
+export async function updateCredits(userID: string, credits: number) {
     const data = await prisma.user.findUnique({
         where: {
             UserID: userID
         }
     })
 
-    if(!data){
+    if (!data) {
         return null;
-    }   
+    }
 
     const updatedCredits = data.credits + credits;
 
-    if (updatedCredits < 0){
+    if (updatedCredits < 0) {
         return "negative";
     }
 
@@ -79,15 +89,15 @@ export async function updateCredits(userID: string,credits: number){
         }
     })
 
-    if(!updatedData){
+    if (!updatedData) {
         return null;
     }
-    
+
 
     return updatedData;
 }
 
-export async function getUserById(userID: string){
+export async function getUserById(userID: string) {
     const data = await prisma.user.findUnique({
         where: {
             UserID: userID
@@ -97,9 +107,9 @@ export async function getUserById(userID: string){
     return data;
 }
 
-export async function getLogsByUserID(userID: string){
+export async function getLogsByUserID(userID: string) {
     const data = await prisma.logs.findMany({
-        where:{
+        where: {
             userID: userID
         }
     })
@@ -107,3 +117,15 @@ export async function getLogsByUserID(userID: string){
     return data;
 }
 
+export async function revokeAPIkey(userID: string) {
+    const data = await prisma.user.update({
+        where: {
+            UserID: userID
+        },
+        data: {
+            apikey: null
+        }
+    });
+
+    return data;
+}

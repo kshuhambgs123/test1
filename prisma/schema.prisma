@@ -22,13 +22,6 @@ model Logs{
   user User @relation(fields: [userID], references: [UserID])
 }
 
-model ApiKeys {
-    apiKeyID String @id @unique
-    apiKey String
-    userID String @unique
-    user User @relation(fields: [userID], references: [UserID])
-}
-
 model User {
     UserID String @id @unique
     name String
@@ -37,7 +30,7 @@ model User {
     phoneNumber String?
     location String?
     credits Int
-    apikey ApiKeys?
+    apikey String?  @unique
     logs Logs[]
 }
 

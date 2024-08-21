@@ -2,7 +2,7 @@ import express, { Request, Response } from "express";
 import adminVerification from "../middleware/adminAuth"
 import path from 'path';
 import fs from 'fs';
-import { adminLogin, generateAPIkey, getAllApikeys, getAllUsers, getLogsByUserID, getUserById, updateCredits } from "../db/admin";
+import { adminLogin, generateAPIkey, getAllApikeys, getAllUsers, getApiKey, getLogsByUserID, getUserById, revokeAPIkey, updateCredits } from "../db/admin";
 
 const app = express.Router();
 
@@ -46,7 +46,7 @@ interface UpdateCreditsRequest extends Request {
 
 
 // Login route
-app.post("/login", async (req: LoginRequest, res: Response) => {
+app.post("/login", async (req: LoginRequest, res: Response) => {  //TESTED
     try {
         const { email, password } = req.body;
         const resp = await adminLogin(email, password);
@@ -60,7 +60,7 @@ app.post("/login", async (req: LoginRequest, res: Response) => {
 });
 
 // Get price
-app.get("/getPrice", adminVerification, async (req: Request, res: Response) => {
+app.get("/getPrice", adminVerification, async (req: Request, res: Response) => {  //TESTED
     try {
         if (!process.env.COSTPERLEAD) {
             throw new Error("no price set");
@@ -72,7 +72,7 @@ app.get("/getPrice", adminVerification, async (req: Request, res: Response) => {
 });
 
 // Change price
-app.post("/changePrice", adminVerification, async (req: ChangePriceRequest, res: Response) => {
+app.post("/changePrice", adminVerification, async (req: ChangePriceRequest, res: Response) => {  //TESTED
     try {
         const { newPrice } = req.body;
         if (isNaN(newPrice) || !newPrice) {
@@ -97,7 +97,7 @@ app.post("/changePrice", adminVerification, async (req: ChangePriceRequest, res:
 });
 
 // Change automation link
-app.post("/changeAutomationLink", adminVerification, async (req: ChangeAutomationLinkRequest, res: Response) => {
+app.post("/changeAutomationLink", adminVerification, async (req: ChangeAutomationLinkRequest, res: Response) => {  //TESTED
     try {
         const { automationLink } = req.body;
         if (!automationLink) {
@@ -122,7 +122,7 @@ app.post("/changeAutomationLink", adminVerification, async (req: ChangeAutomatio
 });
 
 // Change status link
-app.post("/changeStatusLink", adminVerification, async (req: ChangeStatusRequest, res: Response) => {
+app.post("/changeStatusLink", adminVerification, async (req: ChangeStatusRequest, res: Response) => {  //TESTED
     try {
         const { statusLink } = req.body;
         if (!statusLink) {
@@ -147,7 +147,7 @@ app.post("/changeStatusLink", adminVerification, async (req: ChangeStatusRequest
 });
 
 // Change DNS
-app.post("/changeDNS", adminVerification, async (req: ChangeDNSRequest, res: Response) => {
+app.post("/changeDNS", adminVerification, async (req: ChangeDNSRequest, res: Response) => {  //TESTED
     try {
         const { newDNS } = req.body;
         if (!newDNS) {
@@ -172,7 +172,7 @@ app.post("/changeDNS", adminVerification, async (req: ChangeDNSRequest, res: Res
 });
 
 // Get all users
-app.get("/getAllUsers", adminVerification, async (req: Request, res: Response) => {
+app.get("/getAllUsers", adminVerification, async (req: Request, res: Response) => { //TESTED
     try {
         const resp = await getAllUsers();
         res.status(200).json({ resp });
@@ -181,7 +181,7 @@ app.get("/getAllUsers", adminVerification, async (req: Request, res: Response) =
     }
 });
 
-app.get("/getAllApikeys", adminVerification, async (req: Request, res: Response) => {
+app.get("/getAllApikeys", adminVerification, async (req: Request, res: Response) => { //TESTED
     try {
         const resp = await getAllApikeys();
         res.status(200).json({ resp });
@@ -190,7 +190,7 @@ app.get("/getAllApikeys", adminVerification, async (req: Request, res: Response)
     }
 });
 
-app.post("/generateAPIkey", adminVerification, async (req: Request, res: Response) => {
+app.post("/generateAPIkey", adminVerification, async (req: Request, res: Response) => {  //TESTED
     try {
         const { userID } = req.body;
         const resp = await generateAPIkey(userID);
@@ -203,8 +203,34 @@ app.post("/generateAPIkey", adminVerification, async (req: Request, res: Respons
     }
 });
 
+app.post("/getAPIkey",adminVerification, async (req: Request, res: Response) => {  //TESTED
+    try {
+        const { userID } = req.body;
+        const resp = await getApiKey(userID);
+        if (!resp) {
+            throw new Error("this account do not have APIKEY access");
+        }
+        res.status(200).json({ resp });
+    } catch (error: any) {
+        res.status(404).json({ "message": error.message });
+    }
+});
+
+app.post("/revokeAPIkey", adminVerification, async (req: Request, res: Response) => {  //TESTED
+    try {
+        const { userID } = req.body;
+        const resp = await revokeAPIkey(userID);
+        if (!resp) {
+            throw new Error("failed to revoke key");
+        }
+        res.status(200).json({ resp });
+    } catch (error: any) {
+        res.status(404).json({ "message": error.message });
+    }
+});
+
 // Update credits
-app.post("/updateCredits", adminVerification, async (req: UpdateCreditsRequest, res: Response) => {
+app.post("/updateCredits", adminVerification, async (req: UpdateCreditsRequest, res: Response) => {  //TESTED
     try {
         const { userID, credits } = req.body;
         const resp = await updateCredits(userID, credits);
@@ -222,7 +248,7 @@ app.post("/updateCredits", adminVerification, async (req: UpdateCreditsRequest, 
 
 
 // Get user by ID
-app.get("/getUser", adminVerification, async (req: Request, res: Response) => {
+app.get("/getUser", adminVerification, async (req: Request, res: Response) => {  //TESTED
     try {
         const { userID } = req.body;
         const data = await getUserById(userID);
@@ -235,7 +261,7 @@ app.get("/getUser", adminVerification, async (req: Request, res: Response) => {
     }
 });
 
-app.get("/getAllLogs", adminVerification, async (req: Request, res: Response) => {
+app.get("/getAllLogs", adminVerification, async (req: Request, res: Response) => {  //TESTED
     try {
         const {userID} =   req.body;
 
