@@ -3,7 +3,11 @@ import { NextFunction, Request, Response } from "express";
 
 const prisma = new PrismaClient();
 
-const apiAuth = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+interface AuthenticatedRequest extends Request {
+    user?: any; // You can replace `any` with a more specific type if you have a User interface
+  }
+
+const apiAuth = async (req: AuthenticatedRequest, res: Response, next: NextFunction): Promise<void> => {
     try {
         const authHeader = req.headers["authorization"];
         if (!authHeader) {
@@ -22,6 +26,7 @@ const apiAuth = async (req: Request, res: Response, next: NextFunction): Promise
         })
 
         if (user?.apikey) {
+            req.user = user;
             next();
         } else {
             throw new Error("Unauthorized");
