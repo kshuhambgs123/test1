@@ -148,6 +148,16 @@ app.post("/searchlead", verifySessionToken, async (req: Request , res: Response)
 })
 
 
+app.get("/getCostPerLead", verifySessionToken, async (req: Request, res: Response): Promise<void> => {
+    try {
+        const costPerLead = parseInt(process.env.COSTPERLEAD as string);
+        res.status(200).json({ costPerLead });
+    } catch (error: any) {
+        res.status(500).json({ message: error.message });
+    }
+})
+
+
 
 export default app;
 

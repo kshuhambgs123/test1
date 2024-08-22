@@ -22,7 +22,7 @@ function removePunctuation(str: string): string {
 
 app.post("/searchLeads", apiauth, async (req: Request, res: Response): Promise<void> => {
     try {
-        const userID = (req as any).user.id;
+        const userID = (req as any).user.UserID;
         const user = await getUser(userID);
 
         const { apolloLink , noOfLeads, fileName } = req.body;
