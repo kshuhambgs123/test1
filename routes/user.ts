@@ -88,7 +88,7 @@ app.post("/searchlead", verifySessionToken, async (req: Request , res: Response)
 
         // const costPerLead = parseInt(process.env.COSTPERLEAD as string);
         
-        let credits = noOfLeadsNumeric;
+        const credits = noOfLeadsNumeric;
     
 
         if (!user) {
@@ -148,7 +148,7 @@ app.post("/searchlead", verifySessionToken, async (req: Request , res: Response)
 })
 
 
-app.get("/getCostPerLead", verifySessionToken, async (req: Request, res: Response): Promise<void> => {
+app.get("/getCost", verifySessionToken, async (req: Request, res: Response): Promise<void> => {
     try {
         const costPerLead = parseInt(process.env.COSTPERLEAD as string);
         res.status(200).json({ costPerLead });
