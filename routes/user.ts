@@ -86,9 +86,9 @@ app.post("/searchlead", verifySessionToken, async (req: Request , res: Response)
         
         const noOfLeadsNumeric = parseInt(noOfLeads);
 
-        const costPerLead = parseInt(process.env.COSTPERLEAD as string);
+        // const costPerLead = parseInt(process.env.COSTPERLEAD as string);
         
-        let credits = noOfLeadsNumeric * costPerLead;
+        let credits = noOfLeadsNumeric;
     
 
         if (!user) {

@@ -24,4 +24,5 @@
 - GET `/api/user/getUser` - Get a user's details 
 - POST `/api/user/addCredits` - add Credits to a user's account
 - GET `/api/user/getCredits` - Get a user's credits
-- POST `/api/user/deductCredits` - Deduct credits from a user's account
+- POST `/api/user/searchlead` - search for leads
+- GET `/api/user/getCostPerLead` - Get cost per leads
