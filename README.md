@@ -25,4 +25,27 @@
 - POST `/api/user/addCredits` - add Credits to a user's account
 - GET `/api/user/getCredits` - Get a user's credits
 - POST `/api/user/searchlead` - search for leads
-- GET `/api/user/getCostPerLead` - Get cost per leads
+- GET `/api/user/getCost` - Get cost per leads
+
+### Logs
+
+- GET `/api/logs/getUserLogs` - Get specific user's logs
+- GET `/api/logs/getOneLogs` - Get one logs
+- POST `/api/logs/checkLeadStatus`, - Check lead status
+
+### Admin
+
+- POST `/api/admin/login` - Admin login
+- GET `/api/admin/getPrice` - Get price per 1000 leads
+- POST `/api/admin/changePrice` - Change price
+- POST `/api/admin/changeAutomationLink` - Change automation link
+- POST `/api/admin/changeStatusLink` - Change automation status
+- POST `/api/admin/changeDNS` - Change DNS
+- GET `/api/admin/getAllUsers` - Get all users
+- GET `/api/admin/getAllApikeys` - Get all api keys
+- POST `/api/admin/generateAPIkey` - generates api key
+- POST `/api/admin/getAPIkey` - get api key
+- POST `/api/admin/revokeAPIkey` - delete api key
+- POST `/api/admin/updateCredits` - updates user credits
+- GET `/api/admin/getUser` - Gets user
+- GET `/api/admin/getAllLogs` - Get all logs
