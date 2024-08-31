@@ -3,7 +3,7 @@ import express, { Request, Response } from 'express';
 import formdata from 'form-data';
 import { getAllLogs, getOneLog, updateLog } from '../db/log';
 import verifySessionToken from '../middleware/supabaseAuth';
-import { updateCredits } from '../db/admin';
+import { getLogsByUserID, updateCredits } from '../db/admin';
 import { Logs, User } from '@prisma/client';
 dotenv.config();
 
@@ -12,7 +12,7 @@ const app = express.Router();
 app.get("/getUserLogs", verifySessionToken, async (req: Request, res: Response): Promise<void> => {
     try {
         const userID = (req as any).user.id;
-        const logs = await getAllLogs(userID);
+        const logs = await getLogsByUserID(userID);
 
         if (!logs) {
             res.status(404).json({ message: "Logs not found" });
