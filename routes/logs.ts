@@ -60,7 +60,6 @@ app.post("/checkleadStatus", verifySessionToken, async (req: Request , res: Resp
         }
 
         const data = await response.json();
-        console.log(data.enrichment_status)
 
         if(data.enrichment_status == 'Cancelled' || data.enrichment_status == 'Failed'){
             const log = await getOneLog(logID);

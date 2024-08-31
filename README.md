@@ -49,3 +49,8 @@
 - POST `/api/admin/updateCredits` - updates user credits
 - GET `/api/admin/getUser` - Gets user
 - GET `/api/admin/getAllLogs` - Get all logs
+
+#### API
+
+- POST `\api\v1\searchLeads` - Search for leads
+- POST `\api\v1\checkleadStatus` - Check lead status

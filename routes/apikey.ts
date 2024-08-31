@@ -4,7 +4,9 @@ import {getUser, removeCredits} from '../db/user';
 import dotenv from 'dotenv';
 import formdata from 'form-data';
 dotenv.config();
-import {createLog, updateLog} from '../db/log';
+import {createLog, getOneLog, updateLog} from '../db/log';
+import { User } from '@prisma/client';
+import { updateCredits } from '../db/admin';
 
 const app = express.Router();
 
@@ -126,6 +128,34 @@ app.post("/checkleadStatus", apiauth, async (req: Request , res: Response): Prom
         }
 
         const data = await response.json();
+
+        if(data.enrichment_status == 'Cancelled' || data.enrichment_status == 'Failed'){
+            const log = await getOneLog(recordID);
+            if (!log) {
+                res.status(400).json({ message: "Failed to get log" });
+                return;
+            }
+
+            if(log.status == 'Failed' || log.status == 'Cancelled'){
+                res.status(400).json({ message: "Lead status already failed or cancelled credits already refunded" });
+                return;
+            }
+
+            const upLead = await updateLog(recordID,data.enrichment_status,data.spreadsheet_url,data.enriched_records);
+            if (!upLead) {
+                res.status(400).json({ message: "Failed to update log" });
+                return;
+            }
+            const state = await updateCredits(upLead.userID, upLead.creditsUsed)
+            if (!state) {
+                res.status(400).json({ message: "Failed to update credits" });
+                return;
+            }
+
+            res.status(200).json({ message: "lead status failed or cancelled credits refunded", credits: (state as User).credits });
+            return;
+
+        }
 
         const updateLead = await updateLog(recordID,data.enrichment_status,data.spreadsheet_url,data.enriched_records);
 
