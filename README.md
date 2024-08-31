@@ -48,6 +48,7 @@
 - POST `/api/admin/revokeAPIkey` - delete api key
 - POST `/api/admin/updateCredits` - updates user credits
 - GET `/api/admin/getUser` - Gets user
+- GET `/api/admin/getAllLogsById` - Get all  logs by id
 - GET `/api/admin/getAllLogs` - Get all logs
 
 #### API

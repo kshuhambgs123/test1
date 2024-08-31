@@ -38,7 +38,7 @@ export async function createLog(
 
 // get all
 
-export async function getAllLogs(userID :string): Promise<Logs[]> {
+export async function getAllLogsByUserID(userID :string): Promise<Logs[]> {
     try {
         const logs = await prisma.logs.findMany({
             where: {
@@ -46,6 +46,18 @@ export async function getAllLogs(userID :string): Promise<Logs[]> {
             }
         });
 
+        return logs;
+    } catch (error: any) {
+        throw new Error(error.message);
+    }
+}
+
+export async function getAllLogs(): Promise<Logs[]> {
+    try {
+        const logs = await prisma.logs.findMany();
+        if (!logs) {
+            return [];
+        }
         return logs;
     } catch (error: any) {
         throw new Error(error.message);

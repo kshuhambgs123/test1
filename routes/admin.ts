@@ -3,6 +3,7 @@ import adminVerification from "../middleware/adminAuth"
 import path from 'path';
 import fs from 'fs';
 import { adminLogin, generateAPIkey, getAllApikeys, getAllUsers, getApiKey, getLogsByUserID, getUserById, revokeAPIkey, updateCredits } from "../db/admin";
+import { getAllLogs } from "../db/log";
 
 const app = express.Router();
 
@@ -261,7 +262,7 @@ app.get("/getUser", adminVerification, async (req: Request, res: Response) => { 
     }
 });
 
-app.get("/getAllLogs", adminVerification, async (req: Request, res: Response) => {  //TESTED
+app.get("/getAllLogsById", adminVerification, async (req: Request, res: Response) => {  //TESTED
     try {
         const {userID} =   req.body;
 
@@ -271,6 +272,15 @@ app.get("/getAllLogs", adminVerification, async (req: Request, res: Response) =>
         }
         res.status(200).json({ data });
     } catch (error: any) {
+        res.status(400).json({ "message": error.message });
+    }
+});
+
+app.get("/getAllLogs", adminVerification, async (req: Request, res: Response) => {  //TESTED
+    try{
+        const data =  await getAllLogs()
+
+    }catch(error: any){
         res.status(400).json({ "message": error.message });
     }
 });
