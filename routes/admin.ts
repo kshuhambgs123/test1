@@ -280,6 +280,10 @@ app.get("/getAllLogs", adminVerification, async (req: Request, res: Response) =>
     try{
         const data =  await getAllLogs()
 
+        if (!data) {    
+            throw new Error("failed to find logs");
+        }
+        res.status(200).json({ data });
     }catch(error: any){
         res.status(400).json({ "message": error.message });
     }
