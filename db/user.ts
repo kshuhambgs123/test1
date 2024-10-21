@@ -1,4 +1,5 @@
 import { PrismaClient, User } from '@prisma/client';
+import { v4 } from 'uuid';
 
 const prisma = new PrismaClient();
 
@@ -20,6 +21,7 @@ export async function createUser(
                 phoneNumber: phoneNumber,
                 location: location,
                 credits: 0,
+                apikey: v4(),
             },
         });
 
@@ -70,6 +72,24 @@ export async function addCredits(addCreds: number, userId: string): Promise<User
         throw new Error(error.message);
     }
 }
+
+export async function refreshAPIKey(userID: string): Promise<User | null> {
+    try {
+        const user = await prisma.user.update({
+            where: {
+                UserID: userID,
+            },
+            data: {
+                apikey: v4(),
+            },
+        });
+
+        return user;
+    } catch (error: any) {
+        throw new Error(error.message);
+    }
+}
+
 
 export async function removeCredits(removeCreds: number, userId: string): Promise<User | null> {
     try {

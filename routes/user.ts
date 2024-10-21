@@ -1,5 +1,5 @@
 import express, { Request, Response } from 'express';
-import { createUser, getUser, addCredits, removeCredits } from '../db/user';
+import { createUser, getUser, addCredits, removeCredits, refreshAPIKey } from '../db/user';
 import verifySessionToken from '../middleware/supabaseAuth';
 import dotenv from 'dotenv';
 dotenv.config();
@@ -21,6 +21,23 @@ app.post("/register", verifySessionToken, async (req: Request, res: Response): P
         }
 
         res.status(200).json({ message: "User created successfully", user });
+
+    } catch (error: any) {
+        res.status(500).json({ message: error.message });
+    }
+});
+
+app.get("/refreshAPIkey", verifySessionToken, async (req: Request, res: Response): Promise<void> => {
+    try {
+        const userID = (req as any).user.id;
+        const newAPIkey = await refreshAPIKey(userID);
+
+        if (!newAPIkey) {
+            res.status(400).json({ message: "Failed to update API key" });
+            return;
+        }
+
+        res.status(200).json({ message: "API key updated successfully", newAPIkey });
 
     } catch (error: any) {
         res.status(500).json({ message: error.message });
