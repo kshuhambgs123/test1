@@ -1,23 +1,17 @@
-import { Logs, User } from '@prisma/client';
+import { Logs } from '@prisma/client';
 import dotenv from 'dotenv';
 import express, { Request, Response } from 'express';
 import formdata from 'form-data';
 import { updateCredits } from '../db/admin';
-import { createLog, getOneLog, updateLog } from '../db/log';
-import { getUser, removeCredits } from '../db/user';
-import apiauth from '../middleware/apiAuth';
+import { createLog, updateLog } from "../db/log";
+import { addCredits, createUser, getUser, refreshAPIKey, removeCredits } from '../db/user';
+import verifySessionToken from '../middleware/supabaseAuth';
 dotenv.config();
 
+dotenv.config();
+
+
 const app = express.Router();
-
-function checkUrl(url: string): boolean {
-    const basePattern = /^https:\/\/app\.apollo\.io\/#\/people\?/;
-
-    const invalidPattern = /contactLabelIds\[\]=/;
-
-    return basePattern.test(url) && !invalidPattern.test(url);
-}
-
 
 interface LeadStatusResponse {
     record_id: string; // Unique identifier for the record
@@ -31,35 +25,18 @@ interface LeadStatusResponse {
     phase1: string; // Phase 1 details (if any)
 }
 
-app.post("/searchleads", apiauth, async (req: Request, res: Response): Promise<void> => {
+
+app.post("/searchlead", verifySessionToken, async (req: Request, res: Response): Promise<void> => {
     try {
-        const userID = (req as any).user.UserID;
+        const userID = (req as any).user.id;
         const user = await getUser(userID);
 
         const { apolloLink, noOfLeads, fileName } = req.body;
 
-        if (!apolloLink || !noOfLeads || !fileName) {
-            res.status(400).json({ message: "Missing fields" });
-            return;
-        }
+        const noOfLeadsNumeric = parseInt(noOfLeads);   
 
-        //    const fixedFilename = removePunctuation(fileName);
+        const credits = noOfLeadsNumeric;
 
-        if (!checkUrl(apolloLink)) {
-            res.status(400).json({ message: "Invalid URL" });
-            return;
-        }
-
-        const noOfLeadsNumeric = parseInt(noOfLeads);
-
-        if (noOfLeadsNumeric < 1000 || noOfLeadsNumeric > 50000 || noOfLeadsNumeric % 1000 !== 0
-        ) {
-            res.status(400).json({ message: "Invalid number of leads" });
-            return;
-        }
-
-
-        let credits = noOfLeadsNumeric;
 
         if (!user) {
             res.status(404).json({ message: "User not found" });
@@ -98,8 +75,6 @@ app.post("/searchleads", apiauth, async (req: Request, res: Response): Promise<v
 
         const data = await response.json();
 
-        //creating log
-
         const newLog = await createLog(data.record_id, userID, noOfLeadsNumeric, 0, apolloLink, fileName, credits, "url");
 
         // Deduct credit
@@ -120,14 +95,14 @@ app.post("/searchleads", apiauth, async (req: Request, res: Response): Promise<v
     } catch (error: any) {
         res.status(500).json({ message: error.message });
     }
-});
+})
 
 async function checkLeadStatus(log: Logs) {
 
     const leadStatusAPI = process.env.SEARCHAUTOMATIONAPISTATUS as string;
 
     const checkStatus = async (): Promise<LeadStatusResponse | null> => {
-        const maxTries = 720;
+        const maxTries = 1440;
         let tries = 0;
         let response: LeadStatusResponse | null = null;
 
@@ -190,43 +165,5 @@ async function checkLeadStatus(log: Logs) {
         console.log("Lead status completed for logID: ", log.LogID);
     }
 }
-
-
-app.post("/checkleadStatus", apiauth, async (req: Request, res: Response): Promise<void> => {
-    try {
-        const { logID } = req.body;
-
-        if (!logID) {
-            res.status(400).json({ message: "Missing fields" });
-            return;
-        }
-
-        const log = await getOneLog(logID);
-
-        if (!log) {
-            res.status(404).json({ message: "Log not found" });
-            return;
-        }
-
-        if (log.status === "Completed") {
-            res.status(200).json({ message: "Lead has been completed", log: log });
-            return;
-        }
-
-        if (log.status === "Failed") {
-            res.status(200).json({ message: "Lead has failed", log: log });
-            return;
-        }
-
-        if (log.status === "Cancelled") {
-            res.status(200).json({ message: "Lead has been cancelled", log: log });
-            return;
-        }
-
-        res.status(200).json({ message: "Lead is still in progress", log: log });
-    } catch (error: any) {
-        res.status(500).json({ message: error.message });
-    }
-})
 
 export default app;

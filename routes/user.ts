@@ -18,7 +18,7 @@ app.post("/register", verifySessionToken, async (req: Request, res: Response): P
         if (!user) {
             res.status(400).json({ message: "User already exists" });
             return;
-        }
+        }   
 
         res.status(200).json({ message: "User created successfully", user });
 
@@ -94,75 +94,72 @@ app.get("/getCredits", verifySessionToken, async (req: Request, res: Response): 
 });
 
 
-app.post("/searchlead", verifySessionToken, async (req: Request , res: Response): Promise<void> => {
-    try {
-        const userID = (req as any).user.id;
-        const user = await getUser(userID);
+// app.post("/searchlead", verifySessionToken, async (req: Request , res: Response): Promise<void> => {
+//     try {
+//         const userID = (req as any).user.id;
+//         const user = await getUser(userID);
 
-        const { apolloLink , noOfLeads, fileName } = req.body;
+//         const { apolloLink , noOfLeads, fileName } = req.body;
         
-        const noOfLeadsNumeric = parseInt(noOfLeads);
+//         const noOfLeadsNumeric = parseInt(noOfLeads);
 
-        // const costPerLead = parseInt(process.env.COSTPERLEAD as string);
+//         // const costPerLead = parseInt(process.env.COSTPERLEAD as string);
         
-        const credits = noOfLeadsNumeric;
+//         const credits = noOfLeadsNumeric;
     
 
-        if (!user) {
-            res.status(404).json({ message: "User not found" });
-            return;
-        }
+//         if (!user) {
+//             res.status(404).json({ message: "User not found" });
+//             return;
+//         }
 
-        if (user.credits < credits) {
-            res.status(400).json({ message: "Insufficient credits" });
-            return;
-        }
+//         if (user.credits < credits) {
+//             res.status(400).json({ message: "Insufficient credits" });
+//             return;
+//         }
 
-        const dns = process.env.DNS as string;
+//         const dns = process.env.DNS as string;
         
 
-        const formData = new formdata();
+//         const formData = new formdata();
 
-        formData.append('apollo_link', apolloLink);
-        formData.append('file_name', fileName);
-        formData.append('id', dns);
-        formData.append('leads_count',noOfLeadsNumeric);
+//         formData.append('apollo_link', apolloLink);
+//         formData.append('file_name', fileName);
+//         formData.append('id', dns);
+//         formData.append('leads_count',noOfLeadsNumeric);
 
-        const searchAPI = process.env.SEARCHAUTOMATIONAPI as string;
+//         const searchAPI = process.env.SEARCHAUTOMATIONAPI as string;
 
-        const response = await fetch(searchAPI,{
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify(formData),
-        });
+//         const response = await fetch(searchAPI,{
+//             method: 'POST',
+//             headers: {
+//                 'Content-Type': 'application/json',
+//             },
+//             body: JSON.stringify(formData),
+//         });
 
-        if (!response.ok) {
-            res.status(400).json({ message: "Failed to search leads" });
-            return;
-        }
+//         if (!response.ok) {
+//             res.status(400).json({ message: "Failed to search leads" });
+//             return;
+//         }
 
-        const data = await response.json();
+//         const data = await response.json();
 
-        //creating log
+//         const newLog = await createLog(data.record_id,userID,noOfLeadsNumeric,0,apolloLink,fileName,credits,"url");
 
-        const newLog = await createLog(data.record_id,userID,noOfLeadsNumeric,0,apolloLink,fileName,credits,"url");
+//         // Deduct credit
+//         const state = await removeCredits(credits, userID);
+//         if (!state) {
+//             res.status(400).json({ message: "Failed to deduct credits" });
+//             return;
+//         }
 
-        // Deduct credit
-        const state = await removeCredits(credits, userID);
+//         res.status(200).json({ message: `Lead searched successfully balance: ${state.credits} and log created`,balance:state.credits ,log:newLog });
 
-        if (!state) {
-            res.status(400).json({ message: "Failed to deduct credits" });
-            return;
-        }
-
-        res.status(200).json({ message: `Lead searched successfully balance: ${state.credits} and log created`,balance:state.credits ,log:newLog });
-        
-    } catch (error: any) {
-        res.status(500).json({ message: error.message });
-    }    
-})
+//     } catch (error: any) {
+//         res.status(500).json({ message: error.message });
+//     }    
+// })
 
 
 app.get("/getCost", verifySessionToken, async (req: Request, res: Response): Promise<void> => {
