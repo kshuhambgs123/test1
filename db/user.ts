@@ -21,7 +21,7 @@ export async function createUser(
                 companyName: companyName,
                 phoneNumber: phoneNumber,
                 location: location,
-                credits: 0,
+                credits: credits,
                 apikey: v4(),
             },
         });

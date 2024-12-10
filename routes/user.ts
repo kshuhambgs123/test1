@@ -1,7 +1,7 @@
-import express, { Request, Response } from 'express';
-import { createUser, getUser, addCredits, removeCredits, refreshAPIKey } from '../db/user';
-import verifySessionToken from '../middleware/supabaseAuth';
 import dotenv from 'dotenv';
+import express, { Request, Response } from 'express';
+import { addCredits, createUser, getUser, refreshAPIKey, removeCredits } from '../db/user';
+import verifySessionToken from '../middleware/supabaseAuth';
 dotenv.config();
 
 const app = express.Router();
@@ -12,11 +12,11 @@ app.post("/register", verifySessionToken, async (req: Request, res: Response): P
         const email = (req as any).user.email;
         const { fullName, companyName, phoneNumber, location } = req.body;
         const credits = process.env.RegistrationCredits as string;
-        const user = await createUser(fullName, companyName, phoneNumber, location, userID, email,parseInt(credits,10));
+        const user = await createUser(fullName, companyName, phoneNumber, location, userID, email, parseInt(credits, 10));
         if (!user) {
             res.status(400).json({ message: "User already exists" });
             return;
-        }   
+        }
 
         res.status(200).json({ message: "User created successfully", user });
 
@@ -98,13 +98,13 @@ app.get("/getCredits", verifySessionToken, async (req: Request, res: Response): 
 //         const user = await getUser(userID);
 
 //         const { apolloLink , noOfLeads, fileName } = req.body;
-        
+
 //         const noOfLeadsNumeric = parseInt(noOfLeads);
 
 //         // const costPerLead = parseInt(process.env.COSTPERLEAD as string);
-        
+
 //         const credits = noOfLeadsNumeric;
-    
+
 
 //         if (!user) {
 //             res.status(404).json({ message: "User not found" });
@@ -117,7 +117,7 @@ app.get("/getCredits", verifySessionToken, async (req: Request, res: Response): 
 //         }
 
 //         const dns = process.env.DNS as string;
-        
+
 
 //         const formData = new formdata();
 
