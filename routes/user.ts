@@ -3,8 +3,6 @@ import { createUser, getUser, addCredits, removeCredits, refreshAPIKey } from '.
 import verifySessionToken from '../middleware/supabaseAuth';
 import dotenv from 'dotenv';
 dotenv.config();
-import { createLog, updateLog} from "../db/log"
-import formdata from 'form-data';
 
 const app = express.Router();
 
@@ -13,8 +11,8 @@ app.post("/register", verifySessionToken, async (req: Request, res: Response): P
         const userID = (req as any).user.id;
         const email = (req as any).user.email;
         const { fullName, companyName, phoneNumber, location } = req.body;
-        const user = await createUser(fullName, companyName, phoneNumber, location, userID, email);
-
+        const credits = process.env.RegistrationCredits as string;
+        const user = await createUser(fullName, companyName, phoneNumber, location, userID, email,parseInt(credits,10));
         if (!user) {
             res.status(400).json({ message: "User already exists" });
             return;

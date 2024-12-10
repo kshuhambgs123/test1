@@ -9,7 +9,8 @@ export async function createUser(
     phoneNumber: string, 
     location: string, 
     userID: string, 
-    email: string
+    email: string,
+    credits: number
 ): Promise<User | null> {
     try {
         const user = await prisma.user.create({
