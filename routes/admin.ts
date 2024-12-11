@@ -255,7 +255,7 @@ app.post("/updateCredits", adminVerification, async (req: UpdateCreditsRequest, 
 
 
 // Get user by ID
-app.get("/getUser", adminVerification, async (req: Request, res: Response) => {  //TESTED
+app.post("/getUser", adminVerification, async (req: Request, res: Response) => {  //TESTED
     try {
         const { userID } = req.body;
         const data = await getUserById(userID);
@@ -268,7 +268,7 @@ app.get("/getUser", adminVerification, async (req: Request, res: Response) => { 
     }
 });
 
-app.get("/getAllLogsById", adminVerification, async (req: Request, res: Response) => {  //TESTED
+app.post("/getAllLogsById", adminVerification, async (req: Request, res: Response) => {  //TESTED
     try {
         const {userID} =   req.body;
 
