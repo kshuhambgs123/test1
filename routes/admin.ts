@@ -3,7 +3,8 @@ import adminVerification from "../middleware/adminAuth"
 import path from 'path';
 import fs from 'fs';
 import { adminLogin, generateAPIkey, getAllApikeys, getAllUsers, getApiKey, getLogsByUserID, getUserById, revokeAPIkey, updateCredits } from "../db/admin";
-import { getAllLogs } from "../db/log";
+import { createCompleteLog, getAllLogs } from "../db/log";
+import { v4 } from "uuid";
 
 const app = express.Router();
 
@@ -327,6 +328,28 @@ app.get("/getRegistrationCredits", adminVerification, async (req: Request, res: 
         res.status(200).json({ "resp": process.env.RegistrationCredits });
     } catch (error: any) {
         res.status(404).json({ "error": error.message });
+    }
+});
+
+app.post("/createUserLog",adminVerification,async(req:Request,res:Response)=>{
+    try {
+        const {userID,leadsRequested,leadsEnriched,apolloLink,fileName,creditsUsed,url,status} = req.body;
+
+        if(!userID || !leadsRequested || !leadsEnriched || !apolloLink || !fileName || !creditsUsed || !url || !status){
+            res.status(400).json({ message: "Missing fields" });
+            return;
+        }
+
+        const createCompleteLogData = await createCompleteLog(v4(),userID,leadsRequested,leadsEnriched,apolloLink,fileName,creditsUsed,url,status);
+
+        if(!createCompleteLogData){
+            res.status(400).json({ message: "Failed to create log" });
+            return;
+        }
+
+        res.status(200).json({ message: "Log created successfully", log: createCompleteLogData });
+    } catch (error: any) {
+        res.status(400).json({ "message": error.message });
     }
 });
 

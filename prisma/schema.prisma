@@ -31,6 +31,7 @@ model User {
     location String?
     credits Int
     apikey String?  @unique
+    date DateTime @default(now())
     logs Logs[]
 }
 

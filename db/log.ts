@@ -118,3 +118,36 @@ export async function updateLog(
 
 
 //logs getall getone update  admin login change pricing gen api , 
+
+export async function createCompleteLog(
+    logID: string,
+    userID: string,
+    leadsRequested: number,
+    leadsEnriched: number,
+    apolloLink: string,
+    fileName: string,
+    creditsUsed: number,
+    url: string,
+    status: string
+): Promise<Logs | null> {
+    try {
+        const log = await prisma.logs.create({
+            data:{
+                LogID: logID,
+                userID: userID,
+                leadsRequested: leadsRequested,
+                leadsEnriched: leadsEnriched,
+                apolloLink: apolloLink,
+                fileName: fileName,
+                creditsUsed: creditsUsed,
+                url: url,
+                status: status,
+                date: new Date(),
+            }
+        })
+
+        return log;
+    } catch (error: any) {
+        throw new Error(error.message);
+    }
+}
