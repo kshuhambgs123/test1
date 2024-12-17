@@ -131,6 +131,32 @@ export async function createCompleteLog(
     status: string
 ): Promise<Logs | null> {
     try {
+
+        const redCred = await prisma.user.findUnique({
+            where: {
+                UserID: userID
+            }
+        });
+
+        if(redCred?.credits! < creditsUsed){
+            throw new Error("Insufficient Credits");
+        }
+
+        const remCred = await prisma.user.update({
+            where: {
+                UserID: userID
+            },
+            data: {
+                credits: {
+                    decrement: creditsUsed
+                }
+            }
+        });
+
+        if (!remCred) {
+            throw new Error("Failed to deduct credits");
+        }
+        
         const log = await prisma.logs.create({
             data:{
                 LogID: logID,

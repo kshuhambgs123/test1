@@ -1,10 +1,12 @@
 import express, { Request, Response } from "express";
-import adminVerification from "../middleware/adminAuth"
-import path from 'path';
 import fs from 'fs';
-import { adminLogin, generateAPIkey, getAllApikeys, getAllUsers, getApiKey, getLogsByUserID, getUserById, revokeAPIkey, updateCredits } from "../db/admin";
-import { createCompleteLog, getAllLogs } from "../db/log";
+import path from 'path';
 import { v4 } from "uuid";
+import { adminLogin, editLog, generateAPIkey, getAllApikeys, getAllUsers, getApiKey, getLogsByUserID, getUserById, revokeAPIkey, updateCredits } from "../db/admin";
+import { createCompleteLog, getAllLogs, getOneLog, updateLog } from "../db/log";
+import adminVerification from "../middleware/adminAuth";
+import { Logs } from "@prisma/client";
+import {} from "../"
 
 const app = express.Router();
 
@@ -50,6 +52,18 @@ interface ChangeEnrichPriceRequest extends Request {
     body: {
         newPrice: number;
     };
+}
+
+interface LeadStatusResponse {
+    record_id: string; // Unique identifier for the record
+    apollo_link: string; // Link associated with Apollo (if any)
+    file_name: string; // Name of the file (if any)
+    requested_leads_count: string; // Number of requested leads (stored as a string)
+    enrichment_status: string; // Status of the enrichment process
+    spreadsheet_url: string; // URL of the associated Google spreadsheet
+    enriched_records: number; // Count of enriched records
+    credits_involved: number; // Number of credits involved in the process
+    phase1: string; // Phase 1 details (if any)
 }
 
 
@@ -211,7 +225,7 @@ app.post("/generateAPIkey", adminVerification, async (req: Request, res: Respons
     }
 });
 
-app.post("/getAPIkey",adminVerification, async (req: Request, res: Response) => {  //TESTED
+app.post("/getAPIkey", adminVerification, async (req: Request, res: Response) => {  //TESTED
     try {
         const { userID } = req.body;
         const resp = await getApiKey(userID);
@@ -271,7 +285,7 @@ app.post("/getUser", adminVerification, async (req: Request, res: Response) => {
 
 app.post("/getAllLogsById", adminVerification, async (req: Request, res: Response) => {  //TESTED
     try {
-        const {userID} =   req.body;
+        const { userID } = req.body;
 
         const data = await getLogsByUserID(userID);
         if (!data) {
@@ -284,14 +298,14 @@ app.post("/getAllLogsById", adminVerification, async (req: Request, res: Respons
 });
 
 app.get("/getAllLogs", adminVerification, async (req: Request, res: Response) => {  //TESTED
-    try{
-        const data =  await getAllLogs()
+    try {
+        const data = await getAllLogs()
 
-        if (!data) {    
+        if (!data) {
             throw new Error("failed to find logs");
         }
         res.status(200).json({ data });
-    }catch(error: any){
+    } catch (error: any) {
         res.status(400).json({ "message": error.message });
     }
 });
@@ -331,18 +345,18 @@ app.get("/getRegistrationCredits", adminVerification, async (req: Request, res: 
     }
 });
 
-app.post("/createUserLog",async(req:Request,res:Response)=>{
+app.post("/createUserLog",adminVerification, async (req: Request, res: Response) => {
     try {
-        const {userID,leadsRequested,leadsEnriched,apolloLink,fileName,creditsUsed,url,status} = req.body;
+        const { userID, leadsRequested, leadsEnriched, apolloLink, fileName, creditsUsed, url, status } = req.body;
 
-        if(!userID || !leadsRequested || !leadsEnriched || !apolloLink || !fileName || !url || !status){
+        if (!userID || !leadsRequested || !leadsEnriched || !apolloLink || !fileName || !url || !status) {
             res.status(400).json({ message: "Missing fields" });
             return;
         }
 
-        const createCompleteLogData = await createCompleteLog(v4(),userID,leadsRequested,leadsEnriched,apolloLink,fileName,creditsUsed,url,status);
+        const createCompleteLogData = await createCompleteLog(v4(), userID, leadsRequested, leadsEnriched, apolloLink, fileName, creditsUsed, url, status);
 
-        if(!createCompleteLogData){
+        if (!createCompleteLogData) {
             res.status(400).json({ message: "Failed to create log" });
             return;
         }
@@ -352,5 +366,120 @@ app.post("/createUserLog",async(req:Request,res:Response)=>{
         res.status(400).json({ "message": error.message });
     }
 });
+
+app.post("/retryLog", adminVerification, async (req: Request, res: Response) => {
+    try {
+        const { logID } = req.body;
+
+        const log = await getOneLog(logID);
+
+        if (!log) {
+            res.status(404).json({ message: "Log not found" });
+            return;
+        }
+
+        res.status(200).json({ message: "Log found retry function started", log });
+
+        setImmediate(async () => {
+            console.log("Checking lead status for logID: ", log?.LogID);
+            const resp = await checkLeadStatus(log as Logs);
+            console.log("Lead status checked for logID: ", log?.LogID);
+        });
+
+    } catch (error: any) {
+        res.status(400).json({ "message": error.message });
+    }
+});
+
+async function checkLeadStatus(log: Logs) {
+
+    const leadStatusAPI = process.env.SEARCHAUTOMATIONAPISTATUS as string;
+
+    const checkStatus = async (): Promise<LeadStatusResponse | null> => {
+        const maxTries = 1440;
+        let tries = 0;
+        let response: LeadStatusResponse | null = null;
+
+        while (tries < maxTries) {
+            const res = await fetch(leadStatusAPI, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ "record_id": log.LogID }),
+            });
+
+            if (res.ok) {
+                response = await res.json() as LeadStatusResponse;
+
+                if (response.enrichment_status == 'Completed' || response.enrichment_status == 'Failed' || response.enrichment_status == 'Cancelled') {
+                    return response;
+                }
+
+                tries++;
+                await new Promise(r => setTimeout(r, 1 * 60 * 1000));
+            }
+
+            tries++;
+            await new Promise(r => setTimeout(r, 1 * 60 * 1000));
+        }
+        const upLead = await updateLog(log.LogID, 'Failed', '', 0);
+        if (!upLead) {
+            return null;
+        }
+        return null;
+    }
+
+    const response = await checkStatus();
+
+    if (!response) {
+        return;
+    }
+
+    if (response.enrichment_status == 'Cancelled' || response.enrichment_status == 'Failed') {
+        const upLead = await updateLog(log.LogID, response.enrichment_status, response.spreadsheet_url, response.enriched_records);
+        if (!upLead) {
+            return;
+        }
+        const state = await updateCredits(upLead.userID, upLead.creditsUsed)
+        if (!state) {
+            return;
+        }
+
+        console.log("Lead status failed for logID: ", log.LogID);
+    }
+
+    if (response.enrichment_status == 'Completed') {
+        const updateLead = await updateLog(log.LogID, response.enrichment_status, response.spreadsheet_url, response.enriched_records);
+
+        if (!updateLead) {
+            return;
+        }
+
+        console.log("Lead status completed for logID: ", log.LogID);
+    }
+}
+
+app.post("/editLogAdmin", adminVerification,async (req: Request, res: Response) => {
+    try {
+        const {logID, creditsUsed,status,apollo_link} = req.body;
+
+        if (!logID  || !status || !apollo_link) {
+            res.status(400).json({ message: "Missing fields" });
+            return;
+        }
+
+        const UpdateLogData = await editLog(logID, status,apollo_link, creditsUsed);
+
+        if (!UpdateLogData) {
+            res.status(400).json({ message: "Failed to update log" });
+            return;
+        }
+
+        res.status(200).json({ message: "Log updated successfully", log: UpdateLogData});
+    } catch (error:any) {
+        res.status(400).json({ "message": error.message });
+    }
+})
 
 export default app;
