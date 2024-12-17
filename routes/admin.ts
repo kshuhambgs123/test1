@@ -331,11 +331,11 @@ app.get("/getRegistrationCredits", adminVerification, async (req: Request, res: 
     }
 });
 
-app.post("/createUserLog",adminVerification,async(req:Request,res:Response)=>{
+app.post("/createUserLog",async(req:Request,res:Response)=>{
     try {
         const {userID,leadsRequested,leadsEnriched,apolloLink,fileName,creditsUsed,url,status} = req.body;
 
-        if(!userID || !leadsRequested || !leadsEnriched || !apolloLink || !fileName || !creditsUsed || !url || !status){
+        if(!userID || !leadsRequested || !leadsEnriched || !apolloLink || !fileName || !url || !status){
             res.status(400).json({ message: "Missing fields" });
             return;
         }
