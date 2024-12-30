@@ -19,10 +19,10 @@ interface LeadStatusResponse {
     file_name: string; // Name of the file (if any)
     requested_leads_count: string; // Number of requested leads (stored as a string)
     enrichment_status: string; // Status of the enrichment process
-    spreadsheet_url: string; // URL of the associated Google spreadsheet
-    enriched_records: number; // Count of enriched records
-    credits_involved: number; // Number of credits involved in the process
-    phase1: string; // Phase 1 details (if any)
+    spreadsheet_url: string;
+    enriched_records: number; 
+    credits_involved: number; 
+    phase1: string; 
 }
 
 

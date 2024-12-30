@@ -8,34 +8,45 @@ datasource db {
   directUrl = env("DIRECT_URL")
 }
 
-model Logs{
-  LogID String @id @unique
-  userID String
+model BillingDetails {
+  BillingID        String   @id @unique
+  userID           String
+  Url              String
+  CreditsRequested Int
+  date             DateTime
+  user             User     @relation(fields: [userID], references: [UserID])
+}
+
+model Logs {
+  LogID          String   @id @unique
+  userID         String
   leadsRequested Int
-  leadsEnriched Int?
-  apolloLink String
-  fileName String
-  creditsUsed Int
-  url String?
-  status String
-  date DateTime
-  user User @relation(fields: [userID], references: [UserID])
+  leadsEnriched  Int?
+  apolloLink     String
+  fileName       String
+  creditsUsed    Int
+  url            String?
+  status         String
+  date           DateTime
+  user           User     @relation(fields: [userID], references: [UserID])
 }
 
 model User {
-    UserID String @id @unique
-    name String
-    email String
-    companyName String?
-    phoneNumber String?
-    location String?
-    credits Int
-    apikey String?  @unique
-    date DateTime @default(now())
-    logs Logs[]
+  UserID         String           @id @unique
+  name           String
+  email          String
+  companyName    String?
+  phoneNumber    String?
+  location       String?
+  credits        Int
+  heardFrom      String?
+  apikey         String?          @unique
+  date           DateTime         @default(now())
+  logs           Logs[]
+  BillingDetails BillingDetails[]
 }
 
-model Admin{
-  email String @id @unique
+model Admin {
+  email    String @id @unique
   password String
 }

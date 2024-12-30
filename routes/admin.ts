@@ -1,12 +1,13 @@
+import { Logs } from "@prisma/client";
 import express, { Request, Response } from "express";
 import fs from 'fs';
 import path from 'path';
 import { v4 } from "uuid";
+import { } from "../";
 import { adminLogin, editLog, generateAPIkey, getAllApikeys, getAllUsers, getApiKey, getLogsByUserID, getUserById, revokeAPIkey, updateCredits } from "../db/admin";
-import { createCompleteLog, getAllLogs, getOneLog, updateLog } from "../db/log";
+import { getAllInvoices, getInvoiceByBillingID } from "../db/billing";
+import { createCompleteLog, getAllLogs, getAllLogsByUserID, getOneLog, updateLog } from "../db/log";
 import adminVerification from "../middleware/adminAuth";
-import { Logs } from "@prisma/client";
-import {} from "../"
 
 const app = express.Router();
 
@@ -345,7 +346,7 @@ app.get("/getRegistrationCredits", adminVerification, async (req: Request, res: 
     }
 });
 
-app.post("/createUserLog",adminVerification, async (req: Request, res: Response) => {
+app.post("/createUserLog", adminVerification, async (req: Request, res: Response) => {
     try {
         const { userID, leadsRequested, leadsEnriched, apolloLink, fileName, creditsUsed, url, status } = req.body;
 
@@ -460,25 +461,63 @@ async function checkLeadStatus(log: Logs) {
     }
 }
 
-app.post("/editLogAdmin", adminVerification,async (req: Request, res: Response) => {
+app.post("/editLogAdmin", adminVerification, async (req: Request, res: Response) => {
     try {
-        const {logID, creditsUsed,status,apollo_link} = req.body;
+        const { logID, creditsUsed, status, apollo_link } = req.body;
 
-        if (!logID  || !status || !apollo_link) {
+        if (!logID || !status || !apollo_link) {
             res.status(400).json({ message: "Missing fields" });
             return;
         }
 
-        const UpdateLogData = await editLog(logID, status,apollo_link, creditsUsed);
+        const UpdateLogData = await editLog(logID, status, apollo_link, creditsUsed);
 
         if (!UpdateLogData) {
             res.status(400).json({ message: "Failed to update log" });
             return;
         }
 
-        res.status(200).json({ message: "Log updated successfully", log: UpdateLogData});
-    } catch (error:any) {
+        res.status(200).json({ message: "Log updated successfully", log: UpdateLogData });
+    } catch (error: any) {
         res.status(400).json({ "message": error.message });
+    }
+})
+
+app.get("/getAllBills", adminVerification, async (req: Request, res: Response) => {  //TESTED
+    try {
+        const data = await getAllInvoices();
+        if (!data) {
+            throw new Error("no bills found");
+        }
+        res.status(200).json({ data });
+    } catch (error: any) {
+        res.status(404).json({ "error": error.message });
+    }
+})
+
+app.post("/getBillsByUser", adminVerification, async (req: Request, res: Response) => {  //TESTED
+    try {
+        const { userID } = req.body;
+        const data = await getAllLogsByUserID(userID);
+        if (!data) {
+            throw new Error("no bills found");
+        }
+        res.status(200).json({ data });
+    } catch (error: any) {
+        res.status(404).json({ "error": error.message });
+    }
+})
+
+app.post("/getBill", adminVerification, async (req: Request, res: Response) => {  //TESTED
+    try {
+        const { billingID } = req.body;
+        const data = await getInvoiceByBillingID(billingID);
+        if (!data) {
+            throw new Error("no bill found");
+        }
+        res.status(200).json({ data });
+    } catch (error: any) {
+        res.status(404).json({ "error": error.message });
     }
 })
 

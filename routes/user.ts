@@ -10,9 +10,9 @@ app.post("/register", verifySessionToken, async (req: Request, res: Response): P
     try {
         const userID = (req as any).user.id;
         const email = (req as any).user.email;
-        const { fullName, companyName, phoneNumber, location } = req.body;
+        const { fullName, companyName, phoneNumber, location, heardFrom } = req.body;
         const credits = process.env.RegistrationCredits as string;
-        const user = await createUser(fullName, companyName, phoneNumber, location, userID, email, parseInt(credits, 10));
+        const user = await createUser(fullName, companyName, phoneNumber, location, userID, email, parseInt(credits, 10), heardFrom);
         if (!user) {
             res.status(400).json({ message: "User already exists" });
             return;

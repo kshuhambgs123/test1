@@ -35,7 +35,7 @@ app.post("/searchleads", apiauth, async (req: Request, res: Response): Promise<v
     try {
         const userID = (req as any).user.UserID;
         const user = await getUser(userID);
-
+        console.log("User:came ");
         const { apolloLink, noOfLeads, fileName } = req.body;
 
         if (!apolloLink || !noOfLeads || !fileName) {
@@ -83,6 +83,7 @@ app.post("/searchleads", apiauth, async (req: Request, res: Response): Promise<v
 
         const searchAPI = process.env.SEARCHAUTOMATIONAPI as string;
 
+        console.log("sent data to n8n");
         const response = await fetch(searchAPI, {
             method: 'POST',
             headers: {
@@ -97,7 +98,7 @@ app.post("/searchleads", apiauth, async (req: Request, res: Response): Promise<v
         }
 
         const data = await response.json();
-
+        console.log("data from n8n");
         //creating log
 
         const newLog = await createLog(data.record_id, userID, noOfLeadsNumeric, 0, apolloLink, fileName, credits, "url");
@@ -112,7 +113,7 @@ app.post("/searchleads", apiauth, async (req: Request, res: Response): Promise<v
         res.status(200).json({ message: `Lead searched successfully balance: ${state.credits} and log created`, balance: state.credits, log: newLog });
 
         setImmediate(async () => {
-            console.log("Checking lead status for logID: ", newLog?.LogID);
+            console.log("starting checking lead status for logID: ", newLog?.LogID);
             const resp = await checkLeadStatus(newLog as Logs);
             console.log("Lead status checked for logID: ", newLog?.LogID);
         });
