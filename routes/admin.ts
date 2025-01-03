@@ -396,68 +396,75 @@ async function checkLeadStatus(log: Logs) {
 
     const leadStatusAPI = process.env.SEARCHAUTOMATIONAPISTATUS as string;
 
-    const checkStatus = async (): Promise<LeadStatusResponse | null> => {
-        const maxTries = 1440;
-        let tries = 0;
-        let response: LeadStatusResponse | null = null;
+    try {
+        const checkStatus = async (): Promise<LeadStatusResponse | null> => {
+            const maxTries = 1440;
+            let tries = 0;
+            let response: LeadStatusResponse | null = null;
 
-        while (tries < maxTries) {
-            const res = await fetch(leadStatusAPI, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({ "record_id": log.LogID }),
-            });
+            while (tries < maxTries) {
+                const res = await fetch(leadStatusAPI, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ "record_id": log.LogID }),
+                });
 
-            if (res.ok) {
-                response = await res.json() as LeadStatusResponse;
+                if (res.ok) {
+                    response = await res.json() as LeadStatusResponse;
 
-                if (response.enrichment_status == 'Completed' || response.enrichment_status == 'Failed' || response.enrichment_status == 'Cancelled') {
-                    return response;
+                    if (response.enrichment_status == 'Completed' || response.enrichment_status == 'Failed' || response.enrichment_status == 'Cancelled') {
+                        return response;
+                    }
+
+                    tries++;
+                    await new Promise(r => setTimeout(r, 1 * 60 * 1000));
                 }
 
                 tries++;
                 await new Promise(r => setTimeout(r, 1 * 60 * 1000));
             }
-
-            tries++;
-            await new Promise(r => setTimeout(r, 1 * 60 * 1000));
-        }
-        const upLead = await updateLog(log.LogID, 'Failed', '', 0);
-        if (!upLead) {
+            const upLead = await updateLog(log.LogID, 'Failed', '', 0);
+            if (!upLead) {
+                return null;
+            }
             return null;
         }
-        return null;
-    }
+        const response = await checkStatus();
 
-    const response = await checkStatus();
-
-    if (!response) {
-        return;
-    }
-
-    if (response.enrichment_status == 'Cancelled' || response.enrichment_status == 'Failed') {
-        const upLead = await updateLog(log.LogID, response.enrichment_status, response.spreadsheet_url, response.enriched_records);
-        if (!upLead) {
-            return;
-        }
-        const state = await updateCredits(upLead.userID, upLead.creditsUsed)
-        if (!state) {
+        if (!response) {
             return;
         }
 
-        console.log("Lead status failed for logID: ", log.LogID);
-    }
+        if (response.enrichment_status == 'Cancelled' || response.enrichment_status == 'Failed') {
+            const upLead = await updateLog(log.LogID, response.enrichment_status, response.spreadsheet_url, response.enriched_records);
+            if (!upLead) {
+                return;
+            }
+            const state = await updateCredits(upLead.userID, upLead.creditsUsed)
+            if (!state) {
+                return;
+            }
 
-    if (response.enrichment_status == 'Completed') {
-        const updateLead = await updateLog(log.LogID, response.enrichment_status, response.spreadsheet_url, response.enriched_records);
+            console.log("Lead status failed for logID: ", log.LogID);
+        }
 
+        if (response.enrichment_status == 'Completed') {
+            const updateLead = await updateLog(log.LogID, response.enrichment_status, response.spreadsheet_url, response.enriched_records);
+
+            if (!updateLead) {
+                return;
+            }
+
+            console.log("Lead status completed for logID: ", log.LogID);
+        }
+    } catch (err: any) {
+        const updateLead = await updateLog(log.LogID, 'Failed', '', 0);
         if (!updateLead) {
             return;
         }
-
-        console.log("Lead status completed for logID: ", log.LogID);
+        return;
     }
 }
 
@@ -534,6 +541,7 @@ app.get("/getUsageRanking", adminVerification, async (req: Request, res: Respons
         res.status(404).json({ "error": error.message });
     }
 });
+
 
 
 export default app;

@@ -20,9 +20,9 @@ interface LeadStatusResponse {
     requested_leads_count: string; // Number of requested leads (stored as a string)
     enrichment_status: string; // Status of the enrichment process
     spreadsheet_url: string;
-    enriched_records: number; 
-    credits_involved: number; 
-    phase1: string; 
+    enriched_records: number;
+    credits_involved: number;
+    phase1: string;
 }
 
 
@@ -33,7 +33,7 @@ app.post("/searchlead", verifySessionToken, async (req: Request, res: Response):
 
         const { apolloLink, noOfLeads, fileName } = req.body;
 
-        const noOfLeadsNumeric = parseInt(noOfLeads);   
+        const noOfLeadsNumeric = parseInt(noOfLeads);
 
         const credits = noOfLeadsNumeric;
 
@@ -75,7 +75,7 @@ app.post("/searchlead", verifySessionToken, async (req: Request, res: Response):
 
         const data = await response.json();
 
-        const newLog = await createLog(data.record_id, userID, noOfLeadsNumeric, 0, apolloLink, fileName, credits, "url",user.name,user.email);
+        const newLog = await createLog(data.record_id, userID, noOfLeadsNumeric, 0, apolloLink, fileName, credits, "url", user.name, user.email);
 
         // Deduct credit
         const state = await removeCredits(credits, userID);
@@ -101,68 +101,75 @@ async function checkLeadStatus(log: Logs) {
 
     const leadStatusAPI = process.env.SEARCHAUTOMATIONAPISTATUS as string;
 
-    const checkStatus = async (): Promise<LeadStatusResponse | null> => {
-        const maxTries = 1440;
-        let tries = 0;
-        let response: LeadStatusResponse | null = null;
+    try {
+        const checkStatus = async (): Promise<LeadStatusResponse | null> => {
+            const maxTries = 1440;
+            let tries = 0;
+            let response: LeadStatusResponse | null = null;
 
-        while (tries < maxTries) {
-            const res = await fetch(leadStatusAPI, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({ "record_id": log.LogID }),
-            });
+            while (tries < maxTries) {
+                const res = await fetch(leadStatusAPI, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ "record_id": log.LogID }),
+                });
 
-            if (res.ok) {
-                response = await res.json() as LeadStatusResponse;
+                if (res.ok) {
+                    response = await res.json() as LeadStatusResponse;
 
-                if (response.enrichment_status == 'Completed' || response.enrichment_status == 'Failed' || response.enrichment_status == 'Cancelled') {
-                    return response;
+                    if (response.enrichment_status == 'Completed' || response.enrichment_status == 'Failed' || response.enrichment_status == 'Cancelled') {
+                        return response;
+                    }
+
+                    tries++;
+                    await new Promise(r => setTimeout(r, 1 * 60 * 1000));
                 }
 
                 tries++;
                 await new Promise(r => setTimeout(r, 1 * 60 * 1000));
             }
-
-            tries++;
-            await new Promise(r => setTimeout(r, 1 * 60 * 1000));
-        }
-        const upLead = await updateLog(log.LogID, 'Failed', '', 0);
-        if (!upLead) {
+            const upLead = await updateLog(log.LogID, 'Failed', '', 0);
+            if (!upLead) {
+                return null;
+            }
             return null;
         }
-        return null;
-    }
+        const response = await checkStatus();
 
-    const response = await checkStatus();
-
-    if (!response) {
-        return;
-    }
-
-    if (response.enrichment_status == 'Cancelled' || response.enrichment_status == 'Failed') {
-        const upLead = await updateLog(log.LogID, response.enrichment_status, response.spreadsheet_url, response.enriched_records);
-        if (!upLead) {
-            return;
-        }
-        const state = await updateCredits(upLead.userID, upLead.creditsUsed)
-        if (!state) {
+        if (!response) {
             return;
         }
 
-        console.log("Lead status failed for logID: ", log.LogID);
-    }
+        if (response.enrichment_status == 'Cancelled' || response.enrichment_status == 'Failed') {
+            const upLead = await updateLog(log.LogID, response.enrichment_status, response.spreadsheet_url, response.enriched_records);
+            if (!upLead) {
+                return;
+            }
+            const state = await updateCredits(upLead.userID, upLead.creditsUsed)
+            if (!state) {
+                return;
+            }
 
-    if (response.enrichment_status == 'Completed') {
-        const updateLead = await updateLog(log.LogID, response.enrichment_status, response.spreadsheet_url, response.enriched_records);
+            console.log("Lead status failed for logID: ", log.LogID);
+        }
 
+        if (response.enrichment_status == 'Completed') {
+            const updateLead = await updateLog(log.LogID, response.enrichment_status, response.spreadsheet_url, response.enriched_records);
+
+            if (!updateLead) {
+                return;
+            }
+
+            console.log("Lead status completed for logID: ", log.LogID);
+        }
+    } catch (err: any) {
+        const updateLead = await updateLog(log.LogID, 'Failed', '', 0);
         if (!updateLead) {
             return;
         }
-
-        console.log("Lead status completed for logID: ", log.LogID);
+        return;
     }
 }
 
