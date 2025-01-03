@@ -20,6 +20,8 @@ model BillingDetails {
 model Logs {
   LogID          String   @id @unique
   userID         String
+  name           String?
+  email          String?
   leadsRequested Int
   leadsEnriched  Int?
   apolloLink     String
@@ -32,18 +34,20 @@ model Logs {
 }
 
 model User {
-  UserID         String           @id @unique
-  name           String
-  email          String
-  companyName    String?
-  phoneNumber    String?
-  location       String?
-  credits        Int
-  heardFrom      String?
-  apikey         String?          @unique
-  date           DateTime         @default(now())
-  logs           Logs[]
-  BillingDetails BillingDetails[]
+  UserID             String           @id @unique
+  name               String
+  email              String
+  companyName        String?
+  phoneNumber        String?
+  location           String?
+  credits            Int
+  heardFrom          String?
+  apikey             String?          @unique
+  date               DateTime         @default(now())
+  TotalCreditsBought Int?
+  TotalCreditsUsed   Int?
+  logs               Logs[]
+  BillingDetails     BillingDetails[]
 }
 
 model Admin {

@@ -114,6 +114,9 @@ export async function removeCredits(removeCreds: number, userId: string): Promis
             },
             data: {
                 credits: updatedCred,
+                TotalCreditsUsed: {
+                    increment: Math.abs(removeCreds),
+                },
             },
         });
 

@@ -521,4 +521,18 @@ app.post("/getBill", adminVerification, async (req: Request, res: Response) => {
     }
 })
 
+app.get("/getUsageRanking", adminVerification, async (req: Request, res: Response) => {  //TESTED
+    try {
+        const data = await getAllUsers();
+        if (!data) {
+            throw new Error("no logs found");
+        }
+
+        let ranking = data.sort((a, b) => b.TotalCreditsUsed! - a.TotalCreditsUsed!);
+        res.status(200).json({ ranking });
+    } catch (error: any) {
+        res.status(404).json({ "error": error.message });
+    }
+});
+
 export default app;

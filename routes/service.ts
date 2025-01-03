@@ -75,7 +75,7 @@ app.post("/searchlead", verifySessionToken, async (req: Request, res: Response):
 
         const data = await response.json();
 
-        const newLog = await createLog(data.record_id, userID, noOfLeadsNumeric, 0, apolloLink, fileName, credits, "url");
+        const newLog = await createLog(data.record_id, userID, noOfLeadsNumeric, 0, apolloLink, fileName, credits, "url",user.name,user.email);
 
         // Deduct credit
         const state = await removeCredits(credits, userID);

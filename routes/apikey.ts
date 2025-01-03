@@ -101,7 +101,7 @@ app.post("/searchleads", apiauth, async (req: Request, res: Response): Promise<v
         console.log("data from n8n");
         //creating log
 
-        const newLog = await createLog(data.record_id, userID, noOfLeadsNumeric, 0, apolloLink, fileName, credits, "url");
+        const newLog = await createLog(data.record_id, userID, noOfLeadsNumeric, 0, apolloLink, fileName, credits, "url", user.name, user.email);
 
         // Deduct credit
         const state = await removeCredits(credits, userID);

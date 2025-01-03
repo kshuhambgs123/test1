@@ -12,7 +12,9 @@ export async function createLog(
     apolloLink: string,
     fileName: string,
     creditsUsed: number,
-    url: string
+    url: string,
+    name: string,
+    email: string,
 ): Promise<Logs | null> {
     try {
         const log = await prisma.logs.create({
@@ -27,6 +29,8 @@ export async function createLog(
                 url: url,
                 status: "pending",
                 date: new Date(),
+                name: name,
+                email: email
             }
         })
 
