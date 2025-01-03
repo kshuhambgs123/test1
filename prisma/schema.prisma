@@ -26,7 +26,7 @@ model Logs {
   leadsEnriched  Int?
   apolloLink     String
   fileName       String
-  creditsUsed    Int
+  creditsUsed    Float
   url            String?
   status         String
   date           DateTime
@@ -40,12 +40,12 @@ model User {
   companyName        String?
   phoneNumber        String?
   location           String?
-  credits            Int
+  credits            Float
   heardFrom          String?
   apikey             String?          @unique
   date               DateTime         @default(now())
-  TotalCreditsBought Int?
-  TotalCreditsUsed   Int?
+  TotalCreditsBought Float?
+  TotalCreditsUsed   Float?
   logs               Logs[]
   BillingDetails     BillingDetails[]
 }

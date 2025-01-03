@@ -12,7 +12,7 @@ app.post("/register", verifySessionToken, async (req: Request, res: Response): P
         const email = (req as any).user.email;
         const { fullName, companyName, phoneNumber, location, heardFrom } = req.body;
         const credits = process.env.RegistrationCredits as string;
-        const user = await createUser(fullName, companyName, phoneNumber, location, userID, email, parseInt(credits, 10), heardFrom);
+        const user = await createUser(fullName, companyName, phoneNumber, location, userID, email, parseFloat(credits), heardFrom);
         if (!user) {
             res.status(400).json({ message: "User already exists" });
             return;
@@ -58,22 +58,22 @@ app.get("/getUser", verifySessionToken, async (req: Request, res: Response): Pro
     }
 });
 
-app.post("/addCredits", verifySessionToken, async (req: Request, res: Response): Promise<void> => {
-    try {
-        const { credits } = req.body;
-        const userID = (req as any).user.id;
-        const state = await addCredits(credits, userID);
+// app.post("/addCredits", verifySessionToken, async (req: Request, res: Response): Promise<void> => {
+//     try {
+//         const { credits } = req.body;
+//         const userID = (req as any).user.id;
+//         const state = await addCredits(credits, userID);
 
-        if (!state) {
-            res.status(400).json({ message: "Failed to add credits" });
-            return;
-        }
+//         if (!state) {
+//             res.status(400).json({ message: "Failed to add credits" });
+//             return;
+//         }
 
-        res.status(200).json({ message: `Credits added successfully balance: ${state.credits}` });
-    } catch (error: any) {
-        res.status(500).json({ message: error.message });
-    }
-});
+//         res.status(200).json({ message: `Credits added successfully balance: ${state.credits}` });
+//     } catch (error: any) {
+//         res.status(500).json({ message: error.message });
+//     }
+// });
 
 app.get("/getCredits", verifySessionToken, async (req: Request, res: Response): Promise<void> => {
     try {
@@ -162,7 +162,7 @@ app.get("/getCredits", verifySessionToken, async (req: Request, res: Response): 
 
 app.get("/getCost", verifySessionToken, async (req: Request, res: Response): Promise<void> => {
     try {
-        const costPerLead = parseInt(process.env.COSTPERLEAD as string);
+        const costPerLead = parseFloat(process.env.COSTPERLEAD as string);
         res.status(200).json({ costPerLead });
     } catch (error: any) {
         res.status(500).json({ message: error.message });

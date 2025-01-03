@@ -4,11 +4,11 @@ import { v4 } from 'uuid';
 const prisma = new PrismaClient();
 
 export async function createUser(
-    fullName: string, 
-    companyName: string, 
-    phoneNumber: string, 
-    location: string, 
-    userID: string, 
+    fullName: string,
+    companyName: string,
+    phoneNumber: string,
+    location: string,
+    userID: string,
     email: string,
     credits: number,
     heardFrom: string
@@ -67,6 +67,9 @@ export async function addCredits(addCreds: number, userId: string): Promise<User
             },
             data: {
                 credits: updatedCred,
+                TotalCreditsBought: {
+                    increment: Math.abs(addCreds),
+                }
             },
         });
 
@@ -124,7 +127,7 @@ export async function removeCredits(removeCreds: number, userId: string): Promis
     } catch (error: any) {
         throw new Error(error.message);
     }
-    
+
 }
 
 export async function getCredits(userID: string): Promise<number | null> {
