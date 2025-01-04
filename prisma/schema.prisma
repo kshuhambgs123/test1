@@ -44,8 +44,8 @@ model User {
   heardFrom          String?
   apikey             String?          @unique
   date               DateTime         @default(now())
-  TotalCreditsBought Float?
-  TotalCreditsUsed   Float?
+  TotalCreditsBought Float           @default(0)
+  TotalCreditsUsed   Float           @default(0)
   logs               Logs[]
   BillingDetails     BillingDetails[]
 }

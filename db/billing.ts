@@ -19,6 +19,7 @@ export async function createInvoiceEntry(
             }
         })
 
+
         if (!invoice) {
             return null;
         }

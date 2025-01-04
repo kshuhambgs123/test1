@@ -5,6 +5,7 @@ import adminRoutes from './admin';
 import apiKeyRoutes from './apikey';
 import serviceRoutes from './service';
 import billingRoutes from './billing';
+import paymentRoutes from "./payments";
 
 const app = express.Router();
 
@@ -14,5 +15,6 @@ app.use("/admin", adminRoutes);
 app.use("/v1",apiKeyRoutes);
 app.use("/service",serviceRoutes);
 app.use("/billing",billingRoutes);
+app.use("/payments",paymentRoutes);
 
 export default app;

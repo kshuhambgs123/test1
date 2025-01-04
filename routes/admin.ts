@@ -4,7 +4,7 @@ import fs from 'fs';
 import path from 'path';
 import { v4 } from "uuid";
 import { } from "../";
-import { adminLogin, editLog, generateAPIkey, getAllApikeys, getAllUsers, getApiKey, getLogsByUserID, getUserById, revokeAPIkey, updateCredits } from "../db/admin";
+import { adminLogin, editLog, generateAPIkey, getAllApikeys, getAllUsers, getApiKey, getLogsByUserID, getUserById, revokeAPIkey, tokenVerify, updateCredits } from "../db/admin";
 import { getAllInvoices, getInvoiceByBillingID } from "../db/billing";
 import { createCompleteLog, getAllLogs, getAllLogsByUserID, getOneLog, updateLog } from "../db/log";
 import adminVerification from "../middleware/adminAuth";
@@ -77,6 +77,20 @@ app.post("/login", async (req: LoginRequest, res: Response) => {  //TESTED
             throw new Error("no admin account");
         }
         res.status(200).json({ "message": "authorised", "token": resp });
+    } catch (error: any) {
+        res.status(404).json({ "message": error.message });
+    }
+});
+
+app.post("/verifyToken", async (req: Request, res: Response) => {  //TESTED
+    try {
+        const { token } = req.body;
+        const resp = await tokenVerify(token);
+        if (!resp) {
+            throw new Error("invalid token");
+        }
+
+        res.status(200).json({ "message": "authorised" });
     } catch (error: any) {
         res.status(404).json({ "message": error.message });
     }
