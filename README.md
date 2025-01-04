@@ -1,4 +1,4 @@
-# Search Leads Backend Development
+# Search Leads Backend
 
 ## Dependencies
 
