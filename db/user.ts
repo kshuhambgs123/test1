@@ -58,8 +58,9 @@ export async function addCredits(addCreds: number, userId: string): Promise<User
         if (!data) {
             return null;
         }
-
+        console.log(data.credits);
         const updatedCred = data.credits + Math.abs(addCreds);
+        const updatedTotalCreditsBought = data.TotalCreditsBought + Math.abs(addCreds);
 
         data = await prisma.user.update({
             where: {
@@ -67,9 +68,7 @@ export async function addCredits(addCreds: number, userId: string): Promise<User
             },
             data: {
                 credits: updatedCred,
-                TotalCreditsBought: {
-                    increment: Math.abs(addCreds),
-                }
+                TotalCreditsBought: updatedTotalCreditsBought,
             },
         });
 
