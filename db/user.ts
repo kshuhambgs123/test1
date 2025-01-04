@@ -58,7 +58,7 @@ export async function addCredits(addCreds: number, userId: string): Promise<User
         if (!data) {
             return null;
         }
-        console.log(data.credits);
+        
         const updatedCred = data.credits + Math.abs(addCreds);
         const updatedTotalCreditsBought = data.TotalCreditsBought + Math.abs(addCreds);
 

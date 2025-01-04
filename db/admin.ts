@@ -40,6 +40,11 @@ export async function generateAPIkey(userID: string) {
     return data;
 }
 
+export async function tokenVerify(token: string) {
+    const data = await adminAuth.get(token);
+    return data;
+}
+
 export async function getAllApikeys() {
     const data = await prisma.user.findMany({
         select: {
