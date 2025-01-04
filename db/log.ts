@@ -153,6 +153,9 @@ export async function createCompleteLog(
             data: {
                 credits: {
                     decrement: creditsUsed
+                },
+                TotalCreditsUsed: {
+                    increment: creditsUsed
                 }
             }
         });

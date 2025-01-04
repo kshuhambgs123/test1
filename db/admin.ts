@@ -85,14 +85,34 @@ export async function updateCredits(userID: string, credits: number) {
         return "negative";
     }
 
-    const updatedData = await prisma.user.update({
-        where: {
-            UserID: userID
-        },
-        data: {
-            credits: updatedCredits
-        }
-    })
+    let updatedData;
+    
+    if(credits > 0){
+        const creditsToAddInTotalBought = data.TotalCreditsBought + credits;
+        updatedData = await prisma.user.update({
+            where: {
+                UserID: userID
+            },
+            data: {
+                credits: updatedCredits,
+                TotalCreditsBought: creditsToAddInTotalBought
+            }
+        })
+    }
+    else if(credits < 0){
+        const creditsToAddInTotalUsed = data.TotalCreditsUsed + Math.abs(credits);
+        updatedData = await prisma.user.update({
+            where: {
+                UserID: userID
+            },
+            data: {
+                credits: updatedCredits,
+                TotalCreditsUsed: creditsToAddInTotalUsed
+            }
+        })
+    }else{
+        return null;
+    }
 
     if (!updatedData) {
         return null;
