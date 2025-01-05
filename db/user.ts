@@ -59,16 +59,19 @@ export async function addCredits(addCreds: number, userId: string): Promise<User
             return null;
         }
         
-        const updatedCred = data.credits + Math.abs(addCreds);
-        const updatedTotalCreditsBought = data.TotalCreditsBought + Math.abs(addCreds);
+        
 
         data = await prisma.user.update({
             where: {
                 UserID: userId,
             },
             data: {
-                credits: updatedCred,
-                TotalCreditsBought: updatedTotalCreditsBought,
+                credits: {
+                    increment: Math.abs(addCreds),
+                },
+                TotalCreditsBought: {
+                    increment: Math.abs(addCreds),
+                },
             },
         });
 
@@ -108,14 +111,15 @@ export async function removeCredits(removeCreds: number, userId: string): Promis
             return null;
         }
 
-        const updatedCred = data.credits - Math.abs(removeCreds);
 
         data = await prisma.user.update({
             where: {
                 UserID: userId,
             },
             data: {
-                credits: updatedCred,
+                credits: {
+                    decrement: Math.abs(removeCreds),
+                },
                 TotalCreditsUsed: {
                     increment: Math.abs(removeCreds),
                 },
