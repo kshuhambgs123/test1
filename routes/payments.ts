@@ -33,7 +33,9 @@ app.post("/searchLeadsConfirmPayment", async (req: Request, res: Response) => {
             // Handle payment_intent.succeeded event
             if (event.type === "payment_intent.succeeded") {
                 const paymentIntent = event.data.object as Stripe.PaymentIntent;
-
+                if (paymentIntent.description === "Payment for EnrichMinion Credits") {
+                    return res.status(200).json({ received: true, reason: "for enrichminion" });
+                }
                 const metadata = paymentIntent.metadata as unknown as StripePaymentMetadata;
 
                 if (metadata) {
