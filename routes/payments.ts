@@ -15,7 +15,7 @@ app.post("/searchLeadsConfirmPayment", async (req: Request, res: Response) => {
             const sig = req.headers['stripe-signature'];
 
             if (!sig) {
-                return res.status(400).json({ error: 'Missing Stripe signature' });
+                return res.status(200).json({ error: 'Missing Stripe signature' });
             }
 
             let event: Stripe.Event;
@@ -42,23 +42,23 @@ app.post("/searchLeadsConfirmPayment", async (req: Request, res: Response) => {
                     if (!metadata.subscriptionPlan) {
                         console.log("single payment");
                         if (!metadata.credits) {
-                            return res.status(400).json({ error: 'Missing credits in metadata' });
+                            return res.status(200).json({ error: 'Missing credits in metadata' });
                         }
                         const updatedCredits = await addCredits(parseFloat(metadata.credits), metadata.userId);
                         if (!updatedCredits) {
-                            return res.status(500).json({ error: 'Internal Server Error' });
+                            return res.status(200).json({ error: 'Internal Server Error' });
                         }
                         return res.status(200).json({ received: true });
                     }
                 }
             }
-            return res.status(500).json({ error: 'Internal Server Error' });
+            return res.status(200).json({ error: 'Internal Server Error' });
         } catch (error: any) {
             console.error('Unexpected error:', error);
-            return res.status(500).json({ error: `Internal Server Error ${error.message}` });
+            return res.status(200).json({ error: `Internal Server Error ${error.message}` });
         }
     } catch (error: any) {
-        res.status(500).json({ message: error.message });
+        res.status(200).json({ message: error.message });
     }
 })
 
