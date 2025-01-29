@@ -1,8 +1,9 @@
 import express, { Request, Response } from 'express';
 import Stripe from 'stripe';
 import { addCredits } from '../db/user';
+import userAuth from "../middleware/supabaseAuth";
 import { stripeClient } from "../payments/stripe";
-import {  StripePaymentMetadata } from '../types/interfaces';
+import { StripePaymentMetadata } from '../types/interfaces';
 
 const app = express.Router();
 
@@ -61,5 +62,90 @@ app.post("/searchLeadsConfirmPayment", async (req: Request, res: Response) => {
         res.status(200).json({ message: error.message });
     }
 })
+
+app.post("/paymentCancelledIntent", userAuth, async (req: Request, res: Response) => {
+    try {
+        const { paymentIntentId } = req.body;
+        const paymentIntent = await stripeClient.paymentIntents.cancel(paymentIntentId);
+        res.status(200).json({ paymentIntent });
+    } catch (error: any) {
+        res.status(200).json({ message: error.message });
+    }
+})
+
+app.post("/retrieveCoupon", userAuth, async (req: Request, res: Response) => {
+    try {
+        const { couponCode } = req.body;
+        const coupon = await stripeClient.coupons.retrieve(couponCode);
+        res.status(200).json({ coupon });
+    } catch (error: any) {
+        res.status(200).json({ message: error.message });
+    }
+})
+
+app.post("/deleteCustomer", userAuth, async (req: Request, res: Response) => {
+    try {
+        const { customerId } = req.body;
+        const deletedCustomer = await stripeClient.customers.deleteDiscount(customerId);
+        res.status(200).json({ deletedCustomer });
+    } catch (error: any) {
+        res.status(200).json({ message: error.message });
+    }
+})
+
+app.post("/updateCouponCode", userAuth, async (req: Request, res: Response) => {
+    try {
+        const { customerId, couponCode } = req.body;
+        const updatedCustomer = await stripeClient.customers.update(customerId, {
+            coupon: couponCode
+        });
+
+        res.status(200).json({ updatedCustomer });
+    } catch (error: any) {
+        res.status(200).json({ message: error.message });
+    }
+})
+
+app.post("/createCustomer", userAuth, async (req: Request, res: Response) => {
+    try {
+        const { name, email, couponID } = req.body;
+        const customer = await stripeClient.customers.create({
+            name: name,
+            email: email,
+            coupon: couponID
+        })
+
+        res.status(200).json({ customer });
+    } catch (error: any) {
+        res.status(200).json({ message: error.message });
+    }
+})
+
+app.post("/createPaymentIntent", userAuth, async (req: Request, res: Response) => {
+    try {
+        const {amount, currency,costumerID,description,automaticPayment, referral,credits,userID,cientName} = req.body;
+
+        const paymentIntent = await stripeClient.paymentIntents.create({
+            amount: amount,
+            currency: currency,
+            customer: costumerID,
+            description: description,
+            automatic_payment_methods: {
+                enabled: automaticPayment
+            },
+            metadata: {
+                referral: referral || null,
+                credits: credits,
+                currency: currency,
+                userId: userID,
+                clientName: cientName
+            },
+        });
+        
+        res.status(200).json({ paymentIntent });
+    } catch (error: any) {
+        res.status(200).json({ message: error.message });        
+    }
+});
 
 export default app;
