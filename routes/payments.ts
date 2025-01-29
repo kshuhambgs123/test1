@@ -148,4 +148,24 @@ app.post("/createPaymentIntent", userAuth, async (req: Request, res: Response) =
     }
 });
 
+app.post("/findCustomerByEmail", userAuth, async (req: Request, res: Response) => {
+    try {
+        const { email } = req.body;
+        const customers = await stripeClient.customers.list({
+            email: email,
+            limit: 1, // Limit to 1 result for efficiency
+        });
+
+        if (customers.data.length > 0) {
+            res.status(200).json({ customerId: customers.data[0].id });
+        } else {
+            res.status(404).json({ message: "Customer not found" });
+        }
+    } catch (error: any) {
+        res.status(500).json({ message: error.message });
+    }
+});
+
+
 export default app;
+
