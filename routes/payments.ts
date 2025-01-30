@@ -65,9 +65,12 @@ app.post("/searchLeadsConfirmPayment", async (req: Request, res: Response) => {
 
 app.post("/paymentCancelledIntent", userAuth, async (req: Request, res: Response) => {
     try {
-        const { paymentIntentId } = req.body;
-        const paymentIntent = await stripeClient.paymentIntents.cancel(paymentIntentId);
+        const { paymentIntentId, cancellationReason } = req.body;
+        const paymentIntent = await stripeClient.paymentIntents.cancel(paymentIntentId, {
+            cancellation_reason: cancellationReason, // reason to cancel
+        });
         res.status(200).json({ paymentIntent });
+        
     } catch (error: any) {
         res.status(200).json({ message: error.message });
     }
