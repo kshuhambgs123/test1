@@ -5,7 +5,7 @@ on:
     branches:
       - master
 
-      
+
 jobs:
   DeployingOnDev:
     name: Deploy on main
@@ -16,7 +16,7 @@ jobs:
         with:
           host: 192.46.213.166
           username: root
-          password: garvitvai@@ # Secure way to authenticate
+          password: garvitvai@@ 
           script: |
             cd /path/to/your/project  # Ensure you're in the right directory
             chmod +x run.sh  # Ensure the script is executable
