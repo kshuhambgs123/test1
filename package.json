@@ -6,7 +6,10 @@
   "scripts": {
     "dev": "nodemon --exec ts-node ./server.ts",
     "postinstall": "npx prisma generate --schema ./prisma/schema.prisma",
-    "migrate": "npx prisma migrate dev --name init"
+    "migrate": "npx prisma migrate dev --name init",
+    "build": "tsc", 
+    "clean": "rimraf dist", 
+    "start": "node dist/server.js"
   },
   "keywords": [],
   "author": "",
