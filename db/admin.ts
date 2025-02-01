@@ -157,7 +157,7 @@ export async function revokeAPIkey(userID: string) {
     return data;
 }
 
-export async function editLog(logID: string, status: string,apollo_link: string, credits: number) {
+export async function editLog(logID: string, status: string,apollo_link: string, credits: number,  url: string) {
     const log = await prisma.logs.findUnique({
         where: {
             LogID: logID
@@ -195,7 +195,8 @@ export async function editLog(logID: string, status: string,apollo_link: string,
         data: {
             status: status,
             apolloLink: apollo_link,
-            creditsUsed: credits
+            creditsUsed: credits,
+            url: url
         }
     });
 

@@ -484,14 +484,14 @@ async function checkLeadStatus(log: Logs) {
 
 app.post("/editLogAdmin", adminVerification, async (req: Request, res: Response) => {
     try {
-        const { logID, creditsUsed, status, apollo_link } = req.body;
+        const { logID, creditsUsed, status, apollo_link, url} = req.body;
 
         if (!logID || !status || !apollo_link) {
             res.status(400).json({ message: "Missing fields" });
             return;
         }
 
-        const UpdateLogData = await editLog(logID, status, apollo_link, creditsUsed);
+        const UpdateLogData = await editLog(logID, status, apollo_link, creditsUsed, url);
 
         if (!UpdateLogData) {
             res.status(400).json({ message: "Failed to update log" });
