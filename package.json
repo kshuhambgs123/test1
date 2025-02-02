@@ -11,7 +11,7 @@
     "clean": "rimraf dist", 
     "start": "node dist/server.js",
     "prebuild": "npm run install-prisma-and-copy",
-    "install-prisma-and-copy": "npm run postinstall-podcast && npm run postinstall-enrichminion && npm run copy-prisma",
+    "install-prisma-and-copy": "npm run postinstall && npm run copy-prisma",
     "copy-prisma": "mkdir -p dist/prisma && cp -r ./prisma/* ./dist/prisma"
   },
   "keywords": [],
