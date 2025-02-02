@@ -9,7 +9,10 @@
     "migrate": "npx prisma migrate dev --name init",
     "build": "tsc", 
     "clean": "rimraf dist", 
-    "start": "node dist/server.js"
+    "start": "node dist/server.js",
+    "prebuild": "npm run install-prisma-and-copy",
+    "install-prisma-and-copy": "npm run postinstall-podcast && npm run postinstall-enrichminion && npm run copy-prisma",
+    "copy-prisma": "mkdir -p dist/prisma && cp -r ./prisma/* ./dist/prisma"
   },
   "keywords": [],
   "author": "",
