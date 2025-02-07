@@ -169,6 +169,5 @@ app.post("/findCustomerByEmail", userAuth, async (req: Request, res: Response) =
     }
 });
 
-
 export default app;
 

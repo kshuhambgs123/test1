@@ -17,7 +17,7 @@ export async function createInvoice(
             logo: process.env.LOGO_URL as string,
             number: invoiceNumber,
             date: new Date().toISOString().split("T")[0],
-            "items[0][name]": from,
+            "items[0][name]": "Leads",
             "items[0][quantity]": quantity.toString(),
             "items[0][unit_cost]": unitCost.toString(),
             notes: "Thank you for being an awesome customer!",
