@@ -65,11 +65,14 @@ app.post("/searchLeadsConfirmPayment", async (req: Request, res: Response) => {
 
 app.post("/paymentCancelledIntent", userAuth, async (req: Request, res: Response) => {
     try {
-        const { paymentIntentId } = req.body;
-        const paymentIntent = await stripeClient.paymentIntents.cancel(paymentIntentId);
+        const { paymentIntentId, cancellationReason } = req.body;
+        const paymentIntent = await stripeClient.paymentIntents.cancel(paymentIntentId, {
+            cancellation_reason: cancellationReason, // reason to cancel
+        });
         res.status(200).json({ paymentIntent });
+        
     } catch (error: any) {
-        res.status(200).json({ message: error.message });
+        res.status(500).json({ message: error.message });
     }
 })
 
@@ -79,7 +82,7 @@ app.post("/retrieveCoupon", userAuth, async (req: Request, res: Response) => {
         const coupon = await stripeClient.coupons.retrieve(couponCode);
         res.status(200).json({ coupon });
     } catch (error: any) {
-        res.status(200).json({ message: error.message });
+        res.status(500).json({ message: error.message });
     }
 })
 
@@ -89,7 +92,7 @@ app.post("/deleteCustomer", userAuth, async (req: Request, res: Response) => {
         const deletedCustomer = await stripeClient.customers.deleteDiscount(customerId);
         res.status(200).json({ deletedCustomer });
     } catch (error: any) {
-        res.status(200).json({ message: error.message });
+        res.status(500).json({ message: error.message });
     }
 })
 
@@ -102,7 +105,7 @@ app.post("/updateCouponCode", userAuth, async (req: Request, res: Response) => {
 
         res.status(200).json({ updatedCustomer });
     } catch (error: any) {
-        res.status(200).json({ message: error.message });
+        res.status(500).json({ message: error.message });
     }
 })
 
@@ -117,7 +120,7 @@ app.post("/createCustomer", userAuth, async (req: Request, res: Response) => {
 
         res.status(200).json({ customer });
     } catch (error: any) {
-        res.status(200).json({ message: error.message });
+        res.status(500).json({ message: error.message });
     }
 })
 
@@ -144,7 +147,7 @@ app.post("/createPaymentIntent", userAuth, async (req: Request, res: Response) =
         
         res.status(200).json({ paymentIntent });
     } catch (error: any) {
-        res.status(200).json({ message: error.message });        
+        res.status(500).json({ message: error.message });        
     }
 });
 

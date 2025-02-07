@@ -32,6 +32,7 @@ jobs:
                 context: .
                 push: true
                 tags: devanshhealdns/searchleadsbackend:dev
+                
     DeployingOnDev:
         name: Deploy on Development
         needs: ToDockerhub
