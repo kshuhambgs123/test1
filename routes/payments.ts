@@ -137,7 +137,7 @@ app.post("/createPaymentIntent", userAuth, async (req: Request, res: Response) =
                 enabled: automaticPayment
             },
             metadata: {
-                referral: referral || null,
+                _afficoneRef: referral || null,
                 credits: credits,
                 currency: currency,
                 userId: userID,
