@@ -2,7 +2,10 @@ import { PrismaClient } from "@prisma/client";
 import { v4 as uuid } from 'uuid';
 import { adminAuth } from "./admindb";
 
-const prisma = new PrismaClient();
+// This ensures a new connection for each request
+const prisma = new PrismaClient({
+  log: ['query', 'info', 'warn', 'error'],
+});
 
 export async function adminLogin(email: string, password: string) {
     const data = await prisma.admin.findUnique({
@@ -135,13 +138,24 @@ export async function getUserById(userID: string) {
 }
 
 export async function getLogsByUserID(userID: string) {
-    const data = await prisma.logs.findMany({
-        where: {
-            userID: userID
-        }
-    })
-
-    return data;
+    try {
+        const data = await prisma.logs.findMany({
+            where: {
+                userID: userID
+            }
+        });
+        return data;
+    } catch (error) {
+        console.error("Database error:", error);
+        // Attempt to reconnect
+        await prisma.$disconnect();
+        // Retry once
+        return await prisma.logs.findMany({
+            where: {
+                userID: userID
+            }
+        });
+    }
 }
 
 export async function revokeAPIkey(userID: string) {
@@ -201,4 +215,8 @@ export async function editLog(logID: string, status: string,apollo_link: string,
     });
 
     return data;
+}
+
+export async function disconnectPrisma() {
+  await prisma.$disconnect();
 }

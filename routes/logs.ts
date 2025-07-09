@@ -20,6 +20,7 @@ app.get("/getUserLogs", verifySessionToken, async (req: Request, res: Response):
 
         res.status(200).json({ logs });
     } catch (error: any) {
+        console.error("Error fetching logs:", error);
         res.status(500).json({ message: error.message });
     }
 }); 
