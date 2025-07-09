@@ -216,7 +216,3 @@ export async function editLog(logID: string, status: string,apollo_link: string,
 
     return data;
 }
-
-export async function disconnectPrisma() {
-  await prisma.$disconnect();
-}
