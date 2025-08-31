@@ -75,21 +75,63 @@ app.get("/getUser", verifySessionToken, async (req: Request, res: Response): Pro
 //     }
 // });
 
-app.get("/getCredits", verifySessionToken, async (req: Request, res: Response): Promise<void> => {
+// app.get("/getCredits", verifySessionToken, async (req: Request, res: Response): Promise<void> => {
+//     try {
+//         const userID = (req as any).user.id;
+//         const user = await getUser(userID);
+
+//         if (!user) {
+//             res.status(404).json({ message: "User not found" });
+//             return;
+//         }
+
+//         res.status(200).json({ credits: user.credits });
+//     } catch (error: any) {
+//         res.status(500).json({ message: error.message });
+//     }
+// });
+
+app.get(
+  "/getCredits",
+  verifySessionToken,
+  async (req: Request, res: Response): Promise<void> => {
     try {
-        const userID = (req as any).user.id;
-        const user = await getUser(userID);
+      const userID = (req as any).user.id;
+      const user = await getUser(userID);
 
-        if (!user) {
-            res.status(404).json({ message: "User not found" });
-            return;
-        }
+      if (!user) {
+        res.status(404).json({ message: "User not found" });
+        return;
+      }
 
-        res.status(200).json({ credits: user.credits });
+      const userSubscriptionCredits = user.subscriptionCredits ?? 0;
+      const totalCredits = userSubscriptionCredits + user.credits;
+
+      let subscriptionInfo = null;
+      if (user.subscriptionStatus === "active" && user.subscriptionPlan) {
+        subscriptionInfo = {
+          status: user.subscriptionStatus,
+          plan: user.subscriptionPlan,
+          currentPeriodEnd: user.subscriptionCurrentPeriodEnd,
+          creditsRemaining: user.subscriptionCredits,
+        };
+      }
+
+      res.status(200).json({
+        credits: {
+          subscriptionCredits: userSubscriptionCredits,
+          purchasedCredits: user.credits,
+          totalCredits: totalCredits,
+        },
+        subscriptionInfo: subscriptionInfo,
+        totalBalance: totalCredits,
+      });
     } catch (error: any) {
-        res.status(500).json({ message: error.message });
+      res.status(500).json({ message: error.message });
     }
-});
+  }
+);
+
 
 
 // app.post("/searchlead", verifySessionToken, async (req: Request , res: Response): Promise<void> => {

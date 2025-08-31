@@ -148,7 +148,7 @@ export async function getLogsByUserID(userID: string) {
     } catch (error) {
         console.error("Database error:", error);
         // Attempt to reconnect
-        await prisma.$disconnect();
+        // await prisma.$disconnect();
         // Retry once
         return await prisma.logs.findMany({
             where: {
