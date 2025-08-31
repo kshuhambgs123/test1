@@ -65,8 +65,9 @@ app.post("/searchleads", apiauth, async (req: Request, res: Response): Promise<v
             res.status(404).json({ message: "User not found" });
             return;
         }
-
-        if (user.credits < credits) {
+        const userSubscriptionCredits = user.subscriptionCredits ?? 0;
+        const totalAvailableCredits = userSubscriptionCredits + user.credits;
+        if (totalAvailableCredits < credits) {
             res.status(400).json({ message: "Insufficient credits" });
             return;
         }
