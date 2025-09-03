@@ -43,8 +43,23 @@ app.post("/searchlead", verifySessionToken, async (req: Request, res: Response):
             return;
         }
 
-        if (user.credits < credits) {
-            res.status(400).json({ message: "Insufficient credits" });
+        // if (user.credits < credits) {
+        //     res.status(400).json({ message: "Insufficient credits" });
+        //     return;
+        // }
+
+        const userSubscriptionCredits = user.subscriptionCredits ?? 0;
+        const totalAvailableCredits = userSubscriptionCredits + user.credits;
+        // console.log("Total available credits:", totalAvailableCredits , "Credits needed:", credits,  userSubscriptionCredits ); 
+        if (totalAvailableCredits < credits) {
+            res.status(400).json({
+            message: "Insufficient credits",
+            availableCredits: {
+                subscriptionCredits: userSubscriptionCredits,
+                purchasedCredits: user.credits,
+                totalCredits: totalAvailableCredits,
+            },
+            });
             return;
         }
 

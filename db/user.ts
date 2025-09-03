@@ -111,18 +111,43 @@ export async function removeCredits(removeCreds: number, userId: string): Promis
             return null;
         }
 
+        //
+        const totalCredits = (data.subscriptionCredits ?? 0) + data.credits;
+
+        if (totalCredits < removeCreds) {
+         return null;
+        }
+
+        // Deduct from subscription credits first, then purchased credits
+        let remainingToDeduct = removeCreds;
+        let newSubscriptionCredits = data.subscriptionCredits ?? 0;
+        let newPurchasedCredits = data.credits;
+
+        if (newSubscriptionCredits >= remainingToDeduct) {
+        newSubscriptionCredits -= remainingToDeduct;
+        } else {
+        remainingToDeduct -= newSubscriptionCredits;
+        newSubscriptionCredits = 0;
+        newPurchasedCredits -= remainingToDeduct;
+        }
+        //
 
         data = await prisma.user.update({
             where: {
                 UserID: userId,
             },
             data: {
-                credits: {
-                    decrement: Math.abs(removeCreds),
-                },
-                TotalCreditsUsed: {
-                    increment: Math.abs(removeCreds),
-                },
+                // credits: {
+                //     decrement: Math.abs(removeCreds),
+                // },
+                // TotalCreditsUsed: {
+                //     increment: Math.abs(removeCreds),
+                // },
+            subscriptionCredits: newSubscriptionCredits,
+            credits: newPurchasedCredits,
+            TotalCreditsUsed: {
+             increment: removeCreds,
+            },
             },
         });
 
