@@ -4,6 +4,9 @@ import { addCredits } from '../db/user';
 import userAuth from "../middleware/supabaseAuth";
 import { stripeClient } from "../payments/stripe";
 import { StripePaymentMetadata } from '../types/interfaces';
+import dotenv from "dotenv";
+import path from "path";
+dotenv.config({ path: path.resolve(__dirname, "../.env") });
 
 const app = express.Router();
 
@@ -128,8 +131,40 @@ app.post("/createPaymentIntent", userAuth, async (req: Request, res: Response) =
     try {
         const {amount, currency,costumerID,description,automaticPayment, referral,credits,userID,cientName} = req.body;
 
+      if (!currency || !credits) {
+        return res.status(400).json({ message: "Invalid currency or credits" });
+      }
+
+      const selectedCurrency = currency.toUpperCase();
+      const perThousandCredit = process.env.COSTPERLEAD || 5;
+      // Base conversion: 1000 credits = $5
+      const amountInUSD = parseInt(credits) * Number(perThousandCredit);
+
+      const amountInUSDPerThousandCredit = amountInUSD / 1000;
+      // console.log("amount :: ", credits, currency, selectedCurrency, perThousandCredit, amountInUSD, amountInUSDPerThousandCredit);
+      // Fallback rates if env is not set
+      const defaultRates: Record<string, number> = {
+        USD: 1,
+        INR: 88.188049,
+        GBP: 0.74502,
+        EUR: 0.859295,
+      };
+
+      const rates: Record<string, number> = {
+        USD: parseFloat(process.env.USD_RATE || defaultRates.USD.toString()),
+        INR: parseFloat(process.env.INR_RATE || defaultRates.INR.toString()),
+        GBP: parseFloat(process.env.GBP_RATE || defaultRates.GBP.toString()),
+        EUR: parseFloat(process.env.EUR_RATE || defaultRates.EUR.toString()),
+      };
+
+      const currencyRate = rates[selectedCurrency] ? rates[selectedCurrency] : defaultRates[selectedCurrency];
+
+      // Calculate amount for Stripe (in smallest currency unit)
+      const amountCalculated = Math.round(amountInUSDPerThousandCredit * currencyRate * 100);
+
+
         const paymentIntent = await stripeClient.paymentIntents.create({
-            amount: amount,
+            amount: amount ? amount : amountCalculated,
             currency: currency,
             customer: costumerID,
             description: description,
