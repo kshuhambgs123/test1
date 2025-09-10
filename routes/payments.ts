@@ -40,6 +40,10 @@ app.post("/searchLeadsConfirmPayment", async (req: Request, res: Response) => {
                 //
                 console.log("-- PAYMENT INTENT ID :", paymentIntent.id);
 
+                if(paymentIntent.metadata.version != "v1") return res
+                    .status(200)
+                    .json({ received: true, reason: "Not for v1", current_version: paymentIntent.metadata.version });
+
                 // Skip subscription-related payments - handled by invoice webhook
                 if (paymentIntent.invoice || paymentIntent.metadata?.subscriptionPlan ||
                         paymentIntent.description?.toLowerCase().includes("subscription")
@@ -193,7 +197,8 @@ app.post("/createPaymentIntent", userAuth, async (req: Request, res: Response) =
                 credits: credits,
                 currency: currency,
                 userId: userID,
-                clientName: cientName
+                clientName: cientName,
+                version: "v1",
             },
         });
         
