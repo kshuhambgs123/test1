@@ -37,13 +37,30 @@ app.post("/searchLeadsConfirmPayment", async (req: Request, res: Response) => {
             // Handle payment_intent.succeeded event
             if (event.type === "payment_intent.succeeded") {
                 const paymentIntent = event.data.object as Stripe.PaymentIntent;
+                //
+                console.log("-- PAYMENT INTENT ID :", paymentIntent.id);
+
+                // Skip subscription-related payments - handled by invoice webhook
+                if (paymentIntent.invoice || paymentIntent.metadata?.subscriptionPlan ||
+                        paymentIntent.description?.toLowerCase().includes("subscription")
+                    /* paymentIntent.description === "Subscription update" ||
+                    paymentIntent.description?.includes("subscription")
+                */) {
+                    console.log(
+                    `Skipping subscription payment intent: ${paymentIntent.id}`
+                    );
+                    return res
+                    .status(200)
+                    .json({ received: true, subscription_handled_elsewhere: true });
+                }
+                //
                 if (paymentIntent.description === "Payment for EnrichMinion Credits") {
                     return res.status(200).json({ received: true, reason: "for enrichminion" });
                 }
                 const metadata = paymentIntent.metadata as unknown as StripePaymentMetadata;
 
                 if (metadata) {
-                    if (!metadata.subscriptionPlan) {
+                    if (metadata && !metadata.subscriptionPlan && metadata.credits) {
                         console.log("single payment");
                         if (!metadata.credits) {
                             return res.status(200).json({ error: 'Missing credits in metadata' });
