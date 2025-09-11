@@ -33,7 +33,7 @@ app.post("/createInvoice", userAuth, async (req, res) => {
             Bucket: "SearchleadsInvoices",
             Key: fileName,
             Body: invoiceData,
-            ACL: "public-read",
+            // ACL: "public-read",
             ContentType: "application/pdf"
         }
 
